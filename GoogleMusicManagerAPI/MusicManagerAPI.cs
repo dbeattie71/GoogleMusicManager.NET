@@ -109,7 +109,7 @@ namespace GoogleMusicManagerAPI
 
         private string GetUploaderName()
         {
-            return this.GetMachineName() + " (gmusicapi-3.0.1)";
+            return this.GetMachineName() + " (GoogleMusicManager.NET 0.1)";
         }
 
         private string GetMachineName()
