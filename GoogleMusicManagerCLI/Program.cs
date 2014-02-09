@@ -13,7 +13,9 @@ namespace GoogleMusicManagerCLI
                 var path = options.Path;
                 var fileList = Directory.GetFiles(path, "*.mp3", options.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
                 var uploader = new UploadProcess();
-                uploader.DoUpload(fileList);
+                var uploaderTask = uploader.DoUpload(fileList);
+                uploaderTask.Wait();
+                var success = uploaderTask.Result;
             }
             Console.WriteLine("Press any key...");
             Console.ReadKey();

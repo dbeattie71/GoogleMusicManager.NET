@@ -22,7 +22,7 @@ namespace GoogleMusicManagerCLI
             this.oauthApi = new Oauth2API(tokenStorage);
         }
         
-        public async void DoUpload(string[] fileList)
+        public async Task<bool> DoUpload(string[] fileList)
         {
             await this.OauthAuthenticate();
             await this.AuthenticateUploader();
@@ -42,6 +42,7 @@ namespace GoogleMusicManagerCLI
                     }
                 }
             }
+            return true;
         }
 
         private async Task<bool> UploadTrack(TrackUploadState us, int position, int trackCount)
