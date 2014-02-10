@@ -78,21 +78,23 @@ namespace GoogleMusicManagerAPI
         /// <param name="address">end point</param>
         /// <param name="content">content</param>
         /// <returns></returns>
-        public async Task<byte[]> Request(HttpMethod method, Uri address, byte[] bytes)
+        public async Task<Stream> Request(HttpMethod method, Uri address, Stream stream)
         {
             using (var requestMessage = new HttpRequestMessage(method, address))
             {
                 var token = tokenStorage.GetOauthToken();
                 requestMessage.Headers.Add("Authorization", token.token_type + " " + token.access_token);
                 requestMessage.Headers.Add("User-agent", MUSIC_MANAGER_USER_AGENT);
-                requestMessage.Content = new ByteArrayContent(bytes);
-                
+
+                requestMessage.Content = new StreamContent(stream);
+
                 var responseMessage = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+
                 responseMessage.EnsureSuccessStatusCode();
 
                 CheckForRejection(responseMessage);
 
-                byte[] retnData = await responseMessage.Content.ReadAsByteArrayAsync();
+                var retnData = await responseMessage.Content.ReadAsStreamAsync();
                 return retnData;
             }
         }
