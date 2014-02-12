@@ -93,6 +93,7 @@ namespace GoogleMusicManagerAPI
                 else
                 {
                     this.observer.MetadataNoMatch(us.Track);
+                    break;
                 }
             }
 
