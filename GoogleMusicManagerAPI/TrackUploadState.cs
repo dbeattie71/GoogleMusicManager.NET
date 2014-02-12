@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using wireless_android_skyjam;
 
-namespace GoogleMusicManagerCLI
+namespace GoogleMusicManagerAPI
 {
     internal class TrackUploadState
     {

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GoogleMusicAPICLI
+namespace GoogleMusicManagerCLI
 {
     class OauthTokenStorage : IOauthTokenStorage
     {

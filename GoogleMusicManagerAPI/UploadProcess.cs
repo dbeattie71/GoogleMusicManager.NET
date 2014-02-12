@@ -1,27 +1,51 @@
-﻿using GoogleMusicAPICLI;
-using GoogleMusicManagerAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Handlers;
 using System.Text;
 using System.Threading.Tasks;
 using wireless_android_skyjam;
 
-namespace GoogleMusicManagerCLI
+namespace GoogleMusicManagerAPI
 {
-    class UploadProcess
+    public class UploadProcess
     {
         private IMusicManagerAPI api;
         private Oauth2API oauthApi;
+        private IUploadProcessObserver observer;
 
-        public UploadProcess()
+        public UploadProcess(IOauthTokenStorage tokenStorage, IUploadProcessObserver observer)
         {
-            var tokenStorage = new OauthTokenStorage();
-            this.api = new MusicManagerAPI(tokenStorage);
+            var progressHandler = new ProgressMessageHandler();
+            progressHandler.HttpSendProgress += progressHandler_HttpSendProgress;
+            progressHandler.HttpReceiveProgress += progressHandler_HttpReceiveProgress;
+
+            var client = new GoogleOauth2HTTP(tokenStorage, progressHandler);
+            this.api = new MusicManagerAPI(client);
             this.oauthApi = new Oauth2API(tokenStorage);
+            this.observer = observer;
         }
-        
+
+        void progressHandler_HttpReceiveProgress(object sender, HttpProgressEventArgs e)
+        {
+            // Debug.WriteLine("Receive: " + e.ProgressPercentage.ToString());
+
+            // Console.WriteLine(e.ProgressPercentage.ToString("   "));
+        }
+
+        void progressHandler_HttpSendProgress(object sender, HttpProgressEventArgs e)
+        {
+            // Debug.WriteLine("Send: " + e.ProgressPercentage.ToString());
+            //var progress = e.ProgressPercentage.ToString();
+            //progress = "\b\b\b" + new String(' ', 3 - progress.Length) + progress;
+
+            this.observer.SendProgress(e.ProgressPercentage);
+
+            //Console.Write(progress);
+        }
+
+
         public async Task<bool> DoUpload(string[] fileList)
         {
             await this.OauthAuthenticate();
@@ -30,15 +54,17 @@ namespace GoogleMusicManagerCLI
             var uploadState = this.BuildUploadState(fileList);
             foreach (var artist in uploadState.Select(p => p.Track).Select(p => p.artist).Distinct().OrderBy(p => p))
             {
-                Console.WriteLine("Artist: " + artist);
+                this.observer.BeginArtist(artist);
 
                 foreach (var album in uploadState.Select(p => p.Track).Where(p => p.artist == artist).Select(p => p.album).Distinct().OrderBy(p => p))
                 {
-                    Console.WriteLine("Album: " + album);
+                    this.observer.BeginAlbum(album);
 
-                    foreach (var us in uploadState.Where(p => p.Track.artist == artist && p.Track.album == album).OrderBy(p => p.Track.disc_number).OrderBy(p => p.Track.track_number))
+                    foreach (var us in uploadState.Where(p => p.Track.artist == artist && p.Track.album == album).OrderBy(p => p.Track.disc_number).ThenBy(p => p.Track.track_number))
                     {
+                        this.observer.BeginTrack(us.Track);
                         await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
+                        this.observer.EndTrack(us.Track);
                     }
                 }
             }
@@ -47,39 +73,44 @@ namespace GoogleMusicManagerCLI
 
         private async Task<bool> UploadTrack(TrackUploadState us, int position, int trackCount)
         {
-            var matchSuccess = false;
             var matchRetryCount = 0;
 
-            Console.WriteLine("Track:" + us.Track.track_number + "\t" + us.Track.title);
-
-            while (matchSuccess == false && matchRetryCount < 5)
+            this.observer.BeginMetadata(us.Track);
+            while (us.SignedChallengeInfo == null)
             {
                 await this.UploadMetadata(new List<TrackUploadState>() { us });
                 if (us.SignedChallengeInfo != null)
                 {
-                    matchSuccess = true;
-                    Console.WriteLine("\tMetadata accepted");
+                    this.observer.MetadataMatch(us.Track);
                 }
-                else
+                else if(matchRetryCount < 5)
                 {
                     matchRetryCount++;
                     var newClientId = GetRandomClientId(us.FileName, matchRetryCount);
                     us.Track.client_id = newClientId;
-                    Console.WriteLine("\tMetadata retry " + matchRetryCount);
+                    this.observer.MetadataMatchRetry(us.Track, matchRetryCount);
+                }
+                else
+                {
+                    this.observer.MetadataNoMatch(us.Track);
                 }
             }
 
             if (us.SignedChallengeInfo != null)
             {
+                observer.BeginUploadSample(us.Track);
                 await this.UploadSample(new List<TrackUploadState>() { us });
-                Console.WriteLine("\tSample result: " + us.TrackSampleResponse.response_code);
+                observer.EndUploadSample(us.Track, us.TrackSampleResponse.response_code);
             }
 
             if (us.TrackSampleResponse != null && us.TrackSampleResponse.response_code == TrackSampleResponse.ResponseCode.UPLOAD_REQUESTED)
             {
+                observer.BeginUploadTrack(us.Track);
                 var uploadResult = await api.UploadTrack(us.Track, us.TrackSampleResponse, us.FileName, position, trackCount);
-                Console.Write("\tUpload: " + uploadResult.sessionStatus.externalFieldTransfers.First().status);
-                Console.WriteLine(", serverId = " + uploadResult.sessionStatus.additionalInfo.googleRupioAdditionalInfo.completionInfo.customerSpecificInfo.ServerFileReference);
+                observer.EndUploadTrack(us.Track, 
+                    uploadResult.sessionStatus.externalFieldTransfers.First().status,
+                    uploadResult.sessionStatus.additionalInfo.googleRupioAdditionalInfo.completionInfo.customerSpecificInfo.ServerFileReference
+                    );
             }
 
             return true;

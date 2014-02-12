@@ -15,13 +15,11 @@ namespace GoogleMusicManagerAPI
 {
     public class MusicManagerAPI : GoogleMusicManagerAPI.IMusicManagerAPI
     {
-        GoogleOauth2HTTP oauth2Client;
-        IOauthTokenStorage tokenStorage;
+        IGoogleOauth2HTTP oauth2Client;
 
-        public MusicManagerAPI(IOauthTokenStorage oauthTokenStorage)
+        public MusicManagerAPI(IGoogleOauth2HTTP oauth2Client)
         {
-            this.oauth2Client = new GoogleOauth2HTTP(oauthTokenStorage);
-            this.tokenStorage = oauthTokenStorage;
+            this.oauth2Client = oauth2Client;
         }
 
         public async Task<UploadResponse> UploaderAuthenticate()

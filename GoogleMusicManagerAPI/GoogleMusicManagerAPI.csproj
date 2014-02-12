@@ -56,8 +56,10 @@
   <ItemGroup>
     <Compile Include="GoogleHTTP.cs" />
     <Compile Include="GoogleOauth2HTTP.cs" />
+    <Compile Include="IGoogleOauth2HTTP.cs" />
     <Compile Include="IMusicManagerAPI.cs" />
     <Compile Include="IOauthTokenStorage.cs" />
+    <Compile Include="IUploadProcessObserver.cs" />
     <Compile Include="Messages\AdditionalInfo.cs" />
     <Compile Include="Messages\JsonUploadResponse.cs" />
     <Compile Include="Messages\UploadSessionRequest.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="Protocol\Locker.cs" />
     <Compile Include="Protocol\Uits.cs" />
     <Compile Include="Protocol\Upload.cs" />
+    <Compile Include="TrackUploadState.cs" />
+    <Compile Include="UploadProcess.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

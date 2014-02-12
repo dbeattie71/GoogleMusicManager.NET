@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GoogleMusicManagerAPI
 {
-    public class GoogleOauth2HTTP
+    public class GoogleOauth2HTTP : IGoogleOauth2HTTP
     {
         private readonly static string MUSIC_MANAGER_USER_AGENT = "Music Manager (1, 0, 55, 7425 HTTPS - Windows)";
 
@@ -24,7 +24,7 @@ namespace GoogleMusicManagerAPI
 
         private IOauthTokenStorage tokenStorage { get; set; }
 
-        public GoogleOauth2HTTP(IOauthTokenStorage tokenStorage)
+        public GoogleOauth2HTTP(IOauthTokenStorage tokenStorage, params DelegatingHandler[] handlers)
         {
             HttpClientHandler handler = new HttpClientHandler
             {
@@ -33,30 +33,12 @@ namespace GoogleMusicManagerAPI
                 UseProxy = false,
             };
 
-            var progressHandler = new ProgressMessageHandler();
-            progressHandler.HttpSendProgress += progressHandler_HttpSendProgress;
-            progressHandler.HttpReceiveProgress += progressHandler_HttpReceiveProgress;
-
             client = HttpClientFactory.Create(
                 handler,
-                progressHandler
+                handlers
                 );
             client.Timeout = new TimeSpan(0, 10, 0);
             this.tokenStorage = tokenStorage;
-        }
-
-        void progressHandler_HttpReceiveProgress(object sender, HttpProgressEventArgs e)
-        {
-            Debug.WriteLine("Receive: " + e.ProgressPercentage.ToString());
-
-            //Console.WriteLine("Receive: " + e.ProgressPercentage.ToString());
-        }
-
-        void progressHandler_HttpSendProgress(object sender, HttpProgressEventArgs e)
-        {
-            Debug.WriteLine("Send: " + e.ProgressPercentage.ToString());
-
-            //Console.WriteLine("Send: " + e.ProgressPercentage.ToString());
         }
 
         ///// <summary>
