@@ -9,8 +9,6 @@ namespace GoogleMusicManagerAPI
 {
     public interface IUploadProcessObserver
     {
-        void BeginArtist(string artist);
-        void BeginAlbum(string album);
         void BeginTrack(Track track);
         void BeginMetadata(Track track);
         void MetadataMatch(Track track);
@@ -21,7 +19,6 @@ namespace GoogleMusicManagerAPI
         void BeginUploadTrack(Track track);
         void EndUploadTrack(Track track, string status, string serverFileReference);
         void EndTrack(Track track);
-
 
         void SendProgress(int p);
     }

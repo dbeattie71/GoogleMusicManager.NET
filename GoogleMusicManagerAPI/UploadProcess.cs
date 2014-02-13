@@ -46,28 +46,20 @@ namespace GoogleMusicManagerAPI
         }
 
 
-        public async Task<bool> DoUpload(string[] fileList)
+        public async Task<bool> DoUpload(IEnumerable<string> fileList)
         {
             await this.OauthAuthenticate();
             await this.AuthenticateUploader();
 
             var uploadState = this.BuildUploadState(fileList);
-            foreach (var artist in uploadState.Select(p => p.Track).Select(p => p.artist).Distinct().OrderBy(p => p))
+
+            foreach (var us in uploadState.OrderBy(p => p.Track.artist).ThenBy(p => p.Track.year).ThenBy(p => p.Track.album).ThenBy(p => p.Track.disc_number).ThenBy(p=> p.Track.track_number))
             {
-                this.observer.BeginArtist(artist);
-
-                foreach (var album in uploadState.Select(p => p.Track).Where(p => p.artist == artist).Select(p => p.album).Distinct().OrderBy(p => p))
-                {
-                    this.observer.BeginAlbum(album);
-
-                    foreach (var us in uploadState.Where(p => p.Track.artist == artist && p.Track.album == album).OrderBy(p => p.Track.disc_number).ThenBy(p => p.Track.track_number))
-                    {
-                        this.observer.BeginTrack(us.Track);
-                        await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
-                        this.observer.EndTrack(us.Track);
-                    }
-                }
+                this.observer.BeginTrack(us.Track);
+                await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
+                this.observer.EndTrack(us.Track);
             }
+            
             return true;
         }
 

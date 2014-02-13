@@ -10,26 +10,13 @@ namespace GoogleMusicManagerCLI
 {
     class UploadProcessObserver : IUploadProcessObserver
     {
-        public void BeginArtist(string artist)
-        {
-            Console.Write("Artist: ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(artist);
-            Console.ResetColor();
-        }
-
-        public void BeginAlbum(string album)
-        {
-            Console.Write("Album: ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(album);
-            Console.ResetColor();
-        }
-
         private Track track;
         private string operation = string.Empty;
         private int progress = 0;
         private bool enableProgress = false;
+
+        private string lastArtist = string.Empty;
+        private string lastAlbum = string.Empty;
 
         private string GetProgress()
         {
@@ -73,6 +60,23 @@ namespace GoogleMusicManagerCLI
 
         public void BeginTrack(wireless_android_skyjam.Track track)
         {
+            if (this.lastArtist != track.artist)
+            {
+                this.lastArtist = track.artist;
+                Console.Write("Artist: ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine(track.artist);
+                Console.ResetColor();
+            }
+            if (this.lastAlbum != track.album)
+            {
+                this.lastAlbum = track.album;
+                Console.Write("Album: ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine(track.album);
+                Console.ResetColor();
+            }
+
             this.track = track;
             this.SetProgress(string.Empty, false);
         }
