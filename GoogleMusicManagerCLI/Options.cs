@@ -16,6 +16,9 @@ namespace GoogleMusicManagerCLI
         [Option('r', "recurse", Required = false, DefaultValue = true, HelpText = "Recurse directories.")]
         public bool Recurse { get; set; }
 
+        [Option('o', "oauthfile", Required = false, DefaultValue = "oauth2.json", HelpText = "Oauth2 credentials file.")]
+        public string OauthFile { get; set; }
+
         [ParserState]
         public IParserState LastParserState { get; set; }
 

@@ -11,7 +11,12 @@ namespace GoogleMusicManagerCLI
 {
     class OauthTokenStorage : IOauthTokenStorage
     {
-        private readonly string storageFile = "oauth2.json";
+        public OauthTokenStorage(string storageFile)
+        {
+            this.storageFile = storageFile;
+        }
+        
+        private string storageFile;
 
         public Oauth2Token GetOauthToken()
         {
