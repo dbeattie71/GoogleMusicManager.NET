@@ -75,7 +75,7 @@ namespace GoogleMusicManagerAPI
                 {
                     this.observer.MetadataMatch(us.Track);
                 }
-                else if(matchRetryCount < 5)
+                else if(matchRetryCount < 10)
                 {
                     matchRetryCount++;
                     var newClientId = GetRandomClientId(us.FileName, matchRetryCount);

@@ -26,16 +26,22 @@ namespace GoogleMusicManagerCLI
                 "{0, -4}", track.track_number.ToString()
                 );
 
-            if (track.title.Length > 40)
+            if (track.title.Length > 35)
             {
-                result += track.title.Substring(0, 40);
+                result += track.title.Substring(0, 35);
             }
             else
             {
-                result += track.title.PadRight(40);
+                result += track.title.PadRight(35);
             }
 
+            var length = new TimeSpan(0, 0, 0, 0, (int)track.duration_millis);
+            result += length.ToString(@"mm\:ss");
             result += " ";
+
+            result += string.Format("{0, -4}", track.original_bit_rate);
+            result += " ";
+
             result += this.operation;
             if (enableProgress)
             {
@@ -108,7 +114,7 @@ namespace GoogleMusicManagerCLI
 
         public void EndUploadSample(wireless_android_skyjam.Track track, wireless_android_skyjam.TrackSampleResponse.ResponseCode responseCode)
         {
-            this.SetProgress("Sample result: " + responseCode, false);
+            this.SetProgress("Sample result: " + responseCode.ToString().ToLower().Replace("_", " "), false);
         }
 
 
@@ -119,7 +125,7 @@ namespace GoogleMusicManagerCLI
 
         public void EndUploadTrack(wireless_android_skyjam.Track track, string status, string serverFileReference)
         {
-            this.SetProgress("Upload track result: " + status, false);
+            this.SetProgress("Upload track result: " + status.ToString().ToLower().Replace("_", " "), false);
         }
 
         public void EndTrack(Track track)
