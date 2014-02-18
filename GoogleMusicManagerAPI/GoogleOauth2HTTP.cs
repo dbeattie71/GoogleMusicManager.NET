@@ -13,8 +13,6 @@ namespace GoogleMusicManagerAPI
 {
     public class GoogleOauth2HTTP : IGoogleOauth2HTTP
     {
-        private readonly static string MUSIC_MANAGER_USER_AGENT = "Music Manager (1, 0, 55, 7425 HTTPS - Windows)";
-
         /// <summary>
         /// The HttpClient
         /// </summary>
@@ -22,9 +20,9 @@ namespace GoogleMusicManagerAPI
 
         private string RejectedReason { get; set; }
 
-        private IOauthTokenStorage tokenStorage { get; set; }
+        private IEnumerable<IHttpHeaderBuilder> headerBuilders { get; set; }
 
-        public GoogleOauth2HTTP(IOauthTokenStorage tokenStorage, params DelegatingHandler[] handlers)
+        public GoogleOauth2HTTP(IEnumerable<IHttpHeaderBuilder> headerBuilders, params DelegatingHandler[] handlers)
         {
             HttpClientHandler handler = new HttpClientHandler
             {
@@ -38,7 +36,7 @@ namespace GoogleMusicManagerAPI
                 handlers
                 );
             client.Timeout = new TimeSpan(0, 10, 0);
-            this.tokenStorage = tokenStorage;
+            this.headerBuilders = headerBuilders;
         }
 
         ///// <summary>
@@ -54,21 +52,25 @@ namespace GoogleMusicManagerAPI
         //    return JSON.Deserialize<T>(response);
         //}
 
-        /// <summary>
-        /// POST request
-        /// </summary>
-        /// <param name="address">end point</param>
-        /// <param name="content">content</param>
-        /// <returns></returns>
         public async Task<Stream> Request(HttpMethod method, Uri address, Stream stream)
+        {
+            var content = stream == null ? (StreamContent)null : new StreamContent(stream);
+            return await this.Request(method, address, content);
+        }
+
+        public async Task<Stream> Request(HttpMethod method, Uri address, HttpContent content)
         {
             using (var requestMessage = new HttpRequestMessage(method, address))
             {
-                var token = tokenStorage.GetOauthToken();
-                requestMessage.Headers.Add("Authorization", token.token_type + " " + token.access_token);
-                requestMessage.Headers.Add("User-agent", MUSIC_MANAGER_USER_AGENT);
-
-                requestMessage.Content = new StreamContent(stream);
+                if (headerBuilders != null)
+                {
+                    var headers = requestMessage.Headers;
+                    foreach (var headerBuilder in headerBuilders)
+                    {
+                        headerBuilder.AssignHeaders(headers);
+                    }
+                }
+                requestMessage.Content = content;
 
                 var responseMessage = await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
 
@@ -79,6 +81,11 @@ namespace GoogleMusicManagerAPI
                 var retnData = await responseMessage.Content.ReadAsStreamAsync();
                 return retnData;
             }
+        }
+
+        public async Task<Stream> Request(HttpMethod method, Uri address)
+        {
+            return await this.Request(method, address, (Stream)null);
         }
 
         private void CheckForRejection(HttpResponseMessage responseMessage)

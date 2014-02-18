@@ -289,5 +289,43 @@ namespace GoogleMusicManagerAPI
             return bytes;
         }
 
+        public async Task<GetTracksToExportResponse> GetTracksToExport(string continuationToken)
+        {
+            var request = new GetTracksToExportRequest();
+            request.client_id = this.GetMACAddress();
+            request.export_type = GetTracksToExportRequest.TracksToExportType.ALL;
+            request.continuation_token = continuationToken;
+
+            var requestStream = this.SerializeMessage(request);
+            using (var results = await oauth2Client.Request(HttpMethod.Post, new Uri("https://music.google.com/music/exportids"), requestStream))
+            {
+                var uploaderResponse = Serializer.Deserialize<GetTracksToExportResponse>(results);
+                return uploaderResponse;
+            }
+        }
+
+        public async Task<ExportUrl> GetTracksUrl(string songId)
+        {
+            var url = "https://music.google.com/music/export?version=2&songid=" + songId;
+
+            using (var results = await oauth2Client.Request(HttpMethod.Get, new Uri(url)))
+            {
+                var exportUrl = DeserializeJsonStream<ExportUrl>(results);
+                return exportUrl;
+            }
+        }
+
+        public async Task<byte[]> DownloadTrack(string url)
+        {
+            using (var results = await oauth2Client.Request(HttpMethod.Get, new Uri(url)))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    results.CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
+        }
+
     }
 }

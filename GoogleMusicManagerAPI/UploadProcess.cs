@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoogleMusicManagerAPI.HTTPHeaders;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,7 +22,13 @@ namespace GoogleMusicManagerAPI
             progressHandler.HttpSendProgress += progressHandler_HttpSendProgress;
             progressHandler.HttpReceiveProgress += progressHandler_HttpReceiveProgress;
 
-            var client = new GoogleOauth2HTTP(tokenStorage, progressHandler);
+            var client = new GoogleOauth2HTTP(
+                new List<IHttpHeaderBuilder>()
+                {
+                    new MusicManagerHeaderBuilder(),
+                    new Oauth2HeaderBuilder(tokenStorage),
+                }, progressHandler
+            );
             this.api = new MusicManagerAPI(client);
             this.oauthApi = new Oauth2API(tokenStorage);
             this.observer = observer;
@@ -53,13 +60,13 @@ namespace GoogleMusicManagerAPI
 
             var uploadState = this.BuildUploadState(fileList);
 
-            foreach (var us in uploadState.OrderBy(p => p.Track.artist).ThenBy(p => p.Track.year).ThenBy(p => p.Track.album).ThenBy(p => p.Track.disc_number).ThenBy(p=> p.Track.track_number))
+            foreach (var us in uploadState.OrderBy(p => p.Track.artist).ThenBy(p => p.Track.year).ThenBy(p => p.Track.album).ThenBy(p => p.Track.disc_number).ThenBy(p => p.Track.track_number))
             {
                 this.observer.BeginTrack(us.Track);
                 await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
                 this.observer.EndTrack(us.Track);
             }
-            
+
             return true;
         }
 
@@ -75,7 +82,7 @@ namespace GoogleMusicManagerAPI
                 {
                     this.observer.MetadataMatch(us.Track);
                 }
-                else if(matchRetryCount < 10)
+                else if (matchRetryCount < 10)
                 {
                     matchRetryCount++;
                     var newClientId = GetRandomClientId(us.FileName, matchRetryCount);
@@ -100,7 +107,7 @@ namespace GoogleMusicManagerAPI
             {
                 observer.BeginUploadTrack(us.Track);
                 var uploadResult = await api.UploadTrack(us.Track, us.TrackSampleResponse, us.FileName, position, trackCount);
-                observer.EndUploadTrack(us.Track, 
+                observer.EndUploadTrack(us.Track,
                     uploadResult.sessionStatus.externalFieldTransfers.First().status,
                     uploadResult.sessionStatus.additionalInfo.googleRupioAdditionalInfo.completionInfo.customerSpecificInfo.ServerFileReference
                     );
@@ -195,4 +202,8 @@ namespace GoogleMusicManagerAPI
 
 
     }
+
+
+
+
 }

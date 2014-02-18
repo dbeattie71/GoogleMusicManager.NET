@@ -28,8 +28,6 @@ namespace GoogleMusicManagerCLI
                 uploaderTask.Wait();
                 var success = uploaderTask.Result;
             }
-            Console.WriteLine("Press any key...");
-            Console.ReadKey();
         }
     }
 

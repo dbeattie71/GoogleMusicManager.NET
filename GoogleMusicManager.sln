@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleMusicManagerCLI", "Go
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleMusicManagerAPI", "GoogleMusicManagerAPI\GoogleMusicManagerAPI.csproj", "{72020777-7067-4197-A7E8-D802AD03BC79}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleMusicDownloaderCLI", "GoogleMusicDownloaderCLI\GoogleMusicDownloaderCLI.csproj", "{B60EB42F-B71F-4386-B612-C8E860E86382}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,16 @@ Global
 		{72020777-7067-4197-A7E8-D802AD03BC79}.Release|ARM.ActiveCfg = Release|Any CPU
 		{72020777-7067-4197-A7E8-D802AD03BC79}.Release|x64.ActiveCfg = Release|Any CPU
 		{72020777-7067-4197-A7E8-D802AD03BC79}.Release|x86.ActiveCfg = Release|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Release|x64.ActiveCfg = Release|Any CPU
+		{B60EB42F-B71F-4386-B612-C8E860E86382}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

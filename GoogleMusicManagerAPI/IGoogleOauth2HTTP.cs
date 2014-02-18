@@ -6,6 +6,8 @@ namespace GoogleMusicManagerAPI
 {
     public interface IGoogleOauth2HTTP
     {
+        Task<Stream> Request(HttpMethod method, Uri address, HttpContent content);
         Task<Stream> Request(HttpMethod method, Uri address, Stream stream);
+        Task<Stream> Request(HttpMethod method, Uri address);
     }
 }

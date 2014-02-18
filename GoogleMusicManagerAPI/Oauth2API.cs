@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -11,7 +13,7 @@ namespace GoogleMusicManagerAPI
 {
     public class Oauth2API
     {
-        GoogleHTTP client;
+        IGoogleOauth2HTTP client;
         IOauthTokenStorage tokenStorage;
 
         const string clientId = "652850857958.apps.googleusercontent.com";
@@ -21,7 +23,7 @@ namespace GoogleMusicManagerAPI
 
         public Oauth2API(IOauthTokenStorage oauthTokenStorage)
         {
-            client = new GoogleHTTP();
+            client = new GoogleOauth2HTTP(null);
             this.tokenStorage = oauthTokenStorage;
         }
         public async Task<Oauth2Token> Authenticate()
@@ -119,7 +121,10 @@ namespace GoogleMusicManagerAPI
                 new KeyValuePair<string, string>("grant_type", "authorization_code"),
             });
 
-            var loginData = await client.POST<Oauth2Token>(new Uri("https://accounts.google.com/o/oauth2/token"), content);
+            var loginDataStream = await client.Request(HttpMethod.Post, new Uri("https://accounts.google.com/o/oauth2/token"), content);
+
+            var loginData = DeserializeJsonStream<Oauth2Token>(loginDataStream);
+
             return loginData;
         }
 
@@ -142,8 +147,16 @@ namespace GoogleMusicManagerAPI
                 new KeyValuePair<string, string>("grant_type", "refresh_token"),
             });
 
-            var loginData = await client.POST<Oauth2Token>(new Uri("https://accounts.google.com/o/oauth2/token"), content);
+            var loginDataStream = await client.Request(HttpMethod.Post, new Uri("https://accounts.google.com/o/oauth2/token"), content);
+            var loginData = DeserializeJsonStream<Oauth2Token>(loginDataStream);
             return loginData;
+        }
+
+        private static T DeserializeJsonStream<T>(Stream uploadResults)
+        {
+            var jsonSerializer = new JsonSerializer();
+            var uploadResponse = jsonSerializer.Deserialize<T>(new JsonTextReader(new StreamReader(uploadResults)));
+            return uploadResponse;
         }
     }
 }
