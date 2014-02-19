@@ -9,9 +9,14 @@ namespace GoogleMusicManagerAPI.HTTPHeaders
 {
     public class DeviceIDHeaderBuilder : IHttpHeaderBuilder
     {
+        private IDeviceId deviceId;
+        public DeviceIDHeaderBuilder(IDeviceId clientId)
+        {
+            this.deviceId = clientId;
+        }
         public void AssignHeaders(HttpRequestHeaders headers)
         {
-            headers.Add("X-Device-ID", "00:22:15:15:2A:65");
+            headers.Add("X-Device-ID", deviceId.GetDeviceId());
         }
     }
 }

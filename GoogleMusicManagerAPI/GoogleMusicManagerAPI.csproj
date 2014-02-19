@@ -61,6 +61,7 @@
     <Compile Include="IHttpHeaderBuilder.cs" />
     <Compile Include="IMusicManagerAPI.cs" />
     <Compile Include="IOauthTokenStorage.cs" />
+    <Compile Include="IDeviceId.cs" />
     <Compile Include="IUploadProcessObserver.cs" />
     <Compile Include="Messages\AdditionalInfo.cs" />
     <Compile Include="Messages\ExportUrl.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Protocol\Uits.cs" />
     <Compile Include="Protocol\Upload.cs" />
     <Compile Include="TrackUploadState.cs" />
+    <Compile Include="DeviceId\MacAddressDeviceId.cs" />
     <Compile Include="UploadProcess.cs" />
   </ItemGroup>
   <ItemGroup>

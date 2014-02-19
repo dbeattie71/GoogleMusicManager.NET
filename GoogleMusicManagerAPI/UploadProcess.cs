@@ -1,4 +1,5 @@
-﻿using GoogleMusicManagerAPI.HTTPHeaders;
+﻿using GoogleMusicManagerAPI.DeviceId;
+using GoogleMusicManagerAPI.HTTPHeaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +30,7 @@ namespace GoogleMusicManagerAPI
                     new Oauth2HeaderBuilder(tokenStorage),
                 }, progressHandler
             );
-            this.api = new MusicManagerAPI(client);
+            this.api = new MusicManagerAPI(client, new MacAddressDeviceId());
             this.oauthApi = new Oauth2API(tokenStorage);
             this.observer = observer;
         }

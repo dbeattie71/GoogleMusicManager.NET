@@ -1,4 +1,5 @@
-﻿using GoogleMusicManagerAPI.HTTPHeaders;
+﻿using GoogleMusicManagerAPI.DeviceId;
+using GoogleMusicManagerAPI.HTTPHeaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,13 +22,16 @@ namespace GoogleMusicManagerAPI
 
         public async Task<bool> DoDownload(string artist, string album, string title)
         {
+            var deviceId = new MacAddressDeviceId();
+
             var api = new MusicManagerAPI(
                 new GoogleOauth2HTTP(
                     new List<IHttpHeaderBuilder> {
                         new Oauth2HeaderBuilder(oauth2Storage),
                         new MusicManagerHeaderBuilder(),
-                        new DeviceIDHeaderBuilder(),
-                    })
+                        new DeviceIDHeaderBuilder(deviceId),
+                    }),
+                    deviceId
                 );
 
             var oauthApi = new Oauth2API(oauth2Storage);

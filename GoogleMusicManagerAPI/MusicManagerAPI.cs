@@ -16,10 +16,12 @@ namespace GoogleMusicManagerAPI
     public class MusicManagerAPI : GoogleMusicManagerAPI.IMusicManagerAPI
     {
         IGoogleOauth2HTTP oauth2Client;
+        IDeviceId clientId;
 
-        public MusicManagerAPI(IGoogleOauth2HTTP oauth2Client)
+        public MusicManagerAPI(IGoogleOauth2HTTP oauth2Client, IDeviceId clientId)
         {
             this.oauth2Client = oauth2Client;
+            this.clientId = clientId;
         }
 
         public async Task<UploadResponse> UploaderAuthenticate()
@@ -50,7 +52,7 @@ namespace GoogleMusicManagerAPI
         {
             var uploadMetaDataRequest = new UploadMetadataRequest()
             {
-                uploader_id = this.GetMACAddress(),
+                uploader_id = clientId.GetDeviceId(),
             };
 
             uploadMetaDataRequest.track.AddRange(tracks);
@@ -73,7 +75,7 @@ namespace GoogleMusicManagerAPI
         {
             var uploadSampleRequest = new UploadSampleRequest()
             {
-                uploader_id = this.GetMACAddress(),
+                uploader_id = clientId.GetDeviceId(),
             };
 
             uploadSampleRequest.track_sample.AddRange(trackSample);
@@ -92,23 +94,9 @@ namespace GoogleMusicManagerAPI
         private UpAuthRequest CreateUpauthRequest()
         {
             var test = new UpAuthRequest();
-            test.uploader_id = this.GetMACAddress();
+            test.uploader_id = clientId.GetDeviceId();
             test.friendly_name = this.GetUploaderName();
             return test;
-        }
-
-        private string GetMACAddress()
-        {
-            foreach (var nic in NetworkInterface.GetAllNetworkInterfaces().Where(p => p.NetworkInterfaceType != NetworkInterfaceType.Loopback && p.NetworkInterfaceType != NetworkInterfaceType.Tunnel))
-            {
-                var macaddressbytes = nic.GetPhysicalAddress().GetAddressBytes();
-                if (macaddressbytes.Length > 0)
-                {
-                    macaddressbytes[macaddressbytes.Length - 1] = (byte)(macaddressbytes[macaddressbytes.Length - 1] + 0x1);
-                    return BitConverter.ToString(macaddressbytes).Replace("-", ":");
-                }
-            }
-            return null;
         }
 
         private string GetUploaderName()
@@ -192,7 +180,7 @@ namespace GoogleMusicManagerAPI
                             new UploadSessionRequest.CreateSessionRequest.Inlined("title", "jumper-uploader-title-42"),
                             new UploadSessionRequest.CreateSessionRequest.Inlined("TrackDoNotRematch", "false"),
                             new UploadSessionRequest.CreateSessionRequest.Inlined("ServerId", tsr.server_track_id),
-                            new UploadSessionRequest.CreateSessionRequest.Inlined("UploaderId", this.GetMACAddress()),
+                            new UploadSessionRequest.CreateSessionRequest.Inlined("UploaderId", clientId.GetDeviceId()),
                             new UploadSessionRequest.CreateSessionRequest.Inlined("TrackBitRate", track.original_bit_rate.ToString()),
                             new UploadSessionRequest.CreateSessionRequest.Inlined("ClientId", track.client_id),
                         },
@@ -212,7 +200,7 @@ namespace GoogleMusicManagerAPI
             var track = new Track()
             {
                 album = tags.Album,
-                album_artist = tags.JoinedArtists,
+                album_artist = tags.JoinedAlbumArtists,
                 artist = tags.JoinedArtists,
                 title = tags.Title,
                 year = (int)tags.Year,
@@ -292,7 +280,7 @@ namespace GoogleMusicManagerAPI
         public async Task<GetTracksToExportResponse> GetTracksToExport(string continuationToken)
         {
             var request = new GetTracksToExportRequest();
-            request.client_id = this.GetMACAddress();
+            request.client_id = clientId.GetDeviceId();
             request.export_type = GetTracksToExportRequest.TracksToExportType.ALL;
             request.continuation_token = continuationToken;
 
