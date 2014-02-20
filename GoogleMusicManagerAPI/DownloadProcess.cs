@@ -13,37 +13,36 @@ namespace GoogleMusicManagerAPI
     public class DownloadProcess
     {
         private IOauthTokenStorage oauth2Storage { get; set; }
+        private IMusicManagerAPI api { get; set; }
 
         public DownloadProcess(IOauthTokenStorage oauth2Storage)
         {
+            var deviceId = new MacAddressDeviceId();
             this.oauth2Storage = oauth2Storage;
+            this.api = new MusicManagerAPI(
+                new GoogleOauth2HTTP(
+                    new List<IHttpHeaderBuilder> {
+                                    new Oauth2HeaderBuilder(oauth2Storage),
+                                    new MusicManagerHeaderBuilder(),
+                                    new DeviceIDHeaderBuilder(deviceId),
+                                }),
+                    deviceId
+                );
         }
 
 
         public async Task<bool> DoDownload(string artist, string album, string title)
         {
-            var deviceId = new MacAddressDeviceId();
-
-            var api = new MusicManagerAPI(
-                new GoogleOauth2HTTP(
-                    new List<IHttpHeaderBuilder> {
-                        new Oauth2HeaderBuilder(oauth2Storage),
-                        new MusicManagerHeaderBuilder(),
-                        new DeviceIDHeaderBuilder(deviceId),
-                    }),
-                    deviceId
-                );
-
             var oauthApi = new Oauth2API(oauth2Storage);
 
             await oauthApi.Authenticate();
             await api.UploaderAuthenticate();
 
-            var trackList = await this.GetTracks(api);
+            var trackList = await this.GetTracks();
 
-            var tracksToDownload = trackList.Where(p => string.IsNullOrEmpty(artist) || p.artist.ToLower().Contains(artist))
-                .Where(p => string.IsNullOrEmpty(album) || p.album.ToLower().Contains(album))
-                .Where(p => string.IsNullOrEmpty(title) || p.title.ToLower().Contains(title));
+            var tracksToDownload = trackList.Where(p => string.IsNullOrEmpty(artist) || p.artist.ToLower().Contains(artist.ToLower()))
+                .Where(p => string.IsNullOrEmpty(album) || p.album.ToLower().Contains(album.ToLower()))
+                .Where(p => string.IsNullOrEmpty(title) || p.title.ToLower().Contains(title.ToLower()));
 
             foreach (var track in tracksToDownload)
             {
@@ -63,7 +62,7 @@ namespace GoogleMusicManagerAPI
             return true;
         }
 
-        public async Task<IEnumerable<DownloadTrackInfo>> GetTracks(MusicManagerAPI api)
+        public async Task<IEnumerable<DownloadTrackInfo>> GetTracks()
         {
             var trackList = new List<DownloadTrackInfo>();
 

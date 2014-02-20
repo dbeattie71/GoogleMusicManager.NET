@@ -48,7 +48,7 @@ namespace GoogleMusicManagerAPI
             }
         }
 
-        public UploadMetadataRequest CreateUploadMetadataRequest(IEnumerable<Track> tracks)
+        private UploadMetadataRequest CreateUploadMetadataRequest(IEnumerable<Track> tracks)
         {
             var uploadMetaDataRequest = new UploadMetadataRequest()
             {
