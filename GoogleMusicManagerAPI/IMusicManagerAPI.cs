@@ -12,6 +12,7 @@ namespace GoogleMusicManagerAPI
         Task<UploadResponse> UploadMetadata(IEnumerable<Track> tracks);
         TrackSample BuildTrackSample(Track track, SignedChallengeInfo challenge, string filename);
         Task<UploadResponse> UploadSample(IEnumerable<TrackSample> tracks);
-        Task<JsonUploadResponse> UploadTrack(Track track, TrackSampleResponse tsr, string fullFileName, int position, int trackCount);
+        Task<UploadSessionResponse> GetUploadSession(string fullFileName, Track track, TrackSampleResponse tsr, int position, int trackCount);
+        Task<JsonUploadResponse> UploadTrack(UploadSessionResponse uploadSessionResponse, string fullFileName);
     }
 }

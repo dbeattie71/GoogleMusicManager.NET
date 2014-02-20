@@ -142,5 +142,21 @@ namespace GoogleMusicManagerCLI
                 Console.Write(this.GetProgress());
             }
         }
+
+
+        public void BeginSessionRequest(Track track)
+        {
+            this.SetProgress("Uploading session request...", false);
+        }
+
+        public void RetrySessionRequest(Track track, int retryCount)
+        {
+            this.SetProgress("Retry session request " + retryCount, false);
+        }
+
+        public void EndSessionRequest(Track track)
+        {
+            this.SetProgress("Received session", false);
+        }
     }
 }

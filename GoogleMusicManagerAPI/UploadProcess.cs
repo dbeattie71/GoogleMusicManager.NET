@@ -1,5 +1,6 @@
 ﻿using GoogleMusicManagerAPI.DeviceId;
 using GoogleMusicManagerAPI.HTTPHeaders;
+using GoogleMusicManagerAPI.Messages;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -106,8 +107,10 @@ namespace GoogleMusicManagerAPI
 
             if (us.TrackSampleResponse != null && us.TrackSampleResponse.response_code == TrackSampleResponse.ResponseCode.UPLOAD_REQUESTED)
             {
+                var uploadSessionResponse = await GetUploadSession(us, position, trackCount);
+
                 observer.BeginUploadTrack(us.Track);
-                var uploadResult = await api.UploadTrack(us.Track, us.TrackSampleResponse, us.FileName, position, trackCount);
+                var uploadResult = await api.UploadTrack(uploadSessionResponse, us.FileName);
                 observer.EndUploadTrack(us.Track,
                     uploadResult.sessionStatus.externalFieldTransfers.First().status,
                     uploadResult.sessionStatus.additionalInfo.googleRupioAdditionalInfo.completionInfo.customerSpecificInfo.ServerFileReference
@@ -117,6 +120,27 @@ namespace GoogleMusicManagerAPI
             return true;
         }
 
+        private async Task<UploadSessionResponse> GetUploadSession(TrackUploadState us, int position, int trackCount)
+        {
+            var retryCount = 0;
+            observer.BeginSessionRequest(us.Track);
+            while (true)
+            {
+                var uploadSessionResponse = await api.GetUploadSession(us.FileName, us.Track, us.TrackSampleResponse, position, trackCount);
+
+                if (uploadSessionResponse.sessionStatus != null)
+                {
+                    observer.EndSessionRequest(us.Track);
+                    return uploadSessionResponse;
+                }
+                else
+                {
+                    await Task.Delay(1000);
+                    retryCount++;
+                    observer.RetrySessionRequest(us.Track, retryCount);
+                }
+            }
+        }
 
         private async Task<bool> UploadSample(IEnumerable<TrackUploadState> uploadStateList)
         {

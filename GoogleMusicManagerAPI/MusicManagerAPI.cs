@@ -109,10 +109,8 @@ namespace GoogleMusicManagerAPI
             return System.Net.Dns.GetHostName();
         }
 
-        public async Task<JsonUploadResponse> UploadTrack(Track track, TrackSampleResponse tsr, string fullFileName, int position, int trackCount)
+        public async Task<JsonUploadResponse> UploadTrack(UploadSessionResponse uploadSessionResponse, string fullFileName)
         {
-            var uploadSessionResponse = await GetUploadSessionResponse(fullFileName, track, tsr, position, trackCount);
-
             var uploadUrl = uploadSessionResponse.sessionStatus.externalFieldTransfers[0].putInfo.url;
             using (var fileBytes = new FileStream(fullFileName, FileMode.Open, FileAccess.Read))
             {
@@ -131,31 +129,19 @@ namespace GoogleMusicManagerAPI
             return uploadResponse;
         }
 
-        private async Task<UploadSessionResponse> GetUploadSessionResponse(string fullFileName, Track track, TrackSampleResponse tsr, int position, int trackCount)
+        public async Task<UploadSessionResponse> GetUploadSession(string fullFileName, Track track, TrackSampleResponse tsr, int position, int trackCount)
         {
-            var retryCount = 0;
-            while (true)
+            var uploadSessionRequest = BuildUploadSessionRequest(fullFileName, track, tsr, position, trackCount);
+
+            var uploadSessionRequestString = JsonConvert.SerializeObject(uploadSessionRequest);
+            var uploadSessionRequestBytes = System.Text.Encoding.UTF8.GetBytes(uploadSessionRequestString);
+
+            using (var ms = new MemoryStream(uploadSessionRequestBytes))
             {
-                var uploadSessionRequest = BuildUploadSessionRequest(fullFileName, track, tsr, position, trackCount);
+                var results = await oauth2Client.Request(HttpMethod.Post, new Uri("https://uploadsj.clients.google.com/uploadsj/rupio"), ms);
+                var uploadSessionResponse = DeserializeJsonStream<UploadSessionResponse>(results);
+                return uploadSessionResponse;
 
-                var uploadSessionRequestString = JsonConvert.SerializeObject(uploadSessionRequest);
-                var uploadSessionRequestBytes = System.Text.Encoding.UTF8.GetBytes(uploadSessionRequestString);
-
-                using (var ms = new MemoryStream(uploadSessionRequestBytes))
-                {
-                    var results = await oauth2Client.Request(HttpMethod.Post, new Uri("https://uploadsj.clients.google.com/uploadsj/rupio"), ms);
-                    var uploadSessionResponse = DeserializeJsonStream<UploadSessionResponse>(results);
-
-                    if (uploadSessionResponse.sessionStatus != null)
-                    {
-                        return uploadSessionResponse;
-                    }
-                    else
-                    {
-                        retryCount++;
-                        Console.WriteLine("Session status retry " + retryCount);
-                    }
-                }
             }
         }
 

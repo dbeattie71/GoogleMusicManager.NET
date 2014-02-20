@@ -16,6 +16,9 @@ namespace GoogleMusicManagerAPI
         void MetadataNoMatch(Track track);
         void BeginUploadSample(Track track);
         void EndUploadSample(Track track, TrackSampleResponse.ResponseCode responseCode);
+        void BeginSessionRequest(Track track);
+        void RetrySessionRequest(Track track, int retryCount);
+        void EndSessionRequest(Track track);
         void BeginUploadTrack(Track track);
         void EndUploadTrack(Track track, string status, string serverFileReference);
         void EndTrack(Track track);
