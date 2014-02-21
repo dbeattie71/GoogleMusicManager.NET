@@ -301,5 +301,40 @@ namespace GoogleMusicManagerAPI
             }
         }
 
+        public async Task<bool> UpdateUploadStateStart()
+        {
+            return await this.UpdateUploadState(UpdateUploadStateRequest.UploadState.START);
+        }
+
+        public async Task<bool> UpdateUploadStateStopped()
+        {
+            return await this.UpdateUploadState(UpdateUploadStateRequest.UploadState.STOPPED);
+        }
+
+        public async Task<bool> UpdateUploadStatePaused()
+        {
+            return await this.UpdateUploadState(UpdateUploadStateRequest.UploadState.PAUSED);
+        }
+
+        private async Task<bool> UpdateUploadState(UpdateUploadStateRequest.UploadState state)
+        {
+            var request = this.CreateUpdateUploadStateRequest(state);
+            var requestStream = this.SerializeMessage(request);
+            using (var results = await oauth2Client.Request(HttpMethod.Post, new Uri("https://android.clients.google.com/upsj/sample?version=1"), requestStream))
+            {
+                var uploaderResponse = Serializer.Deserialize<UploadResponse>(results);
+                return uploaderResponse.auth_status ==  UploadResponse.AuthStatus.OK;
+            }
+        }
+
+        private UpdateUploadStateRequest CreateUpdateUploadStateRequest(UpdateUploadStateRequest.UploadState state)
+        {
+            var request = new UpdateUploadStateRequest
+            {
+                uploader_id = clientId.GetDeviceId(),
+                state = state,
+            };
+            return request;
+        }
     }
 }

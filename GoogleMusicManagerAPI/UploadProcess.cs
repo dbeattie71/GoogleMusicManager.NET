@@ -62,13 +62,14 @@ namespace GoogleMusicManagerAPI
 
             var uploadState = this.BuildUploadState(fileList);
 
+            await api.UpdateUploadStateStart();
             foreach (var us in uploadState.OrderBy(p => p.Track.artist).ThenBy(p => p.Track.year).ThenBy(p => p.Track.album).ThenBy(p => p.Track.disc_number).ThenBy(p => p.Track.track_number))
             {
                 this.observer.BeginTrack(us.Track);
                 await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
                 this.observer.EndTrack(us.Track);
             }
-
+            await api.UpdateUploadStateStopped();
             return true;
         }
 
