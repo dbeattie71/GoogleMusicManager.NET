@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoogleMusicManagerAPI.TrackMetadata;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,19 +10,19 @@ namespace GoogleMusicManagerAPI
 {
     public interface IUploadProcessObserver
     {
-        void BeginTrack(Track track);
-        void BeginMetadata(Track track);
-        void MetadataMatch(Track track);
-        void MetadataMatchRetry(Track track, int matchRetryCount);
-        void MetadataNoMatch(Track track);
-        void BeginUploadSample(Track track);
-        void EndUploadSample(Track track, TrackSampleResponse.ResponseCode responseCode);
-        void BeginSessionRequest(Track track);
-        void RetrySessionRequest(Track track, int retryCount);
-        void EndSessionRequest(Track track);
-        void BeginUploadTrack(Track track);
-        void EndUploadTrack(Track track, string status, string serverFileReference);
-        void EndTrack(Track track);
+        void BeginTrack(ITrackMetadata track);
+        void BeginMetadata(ITrackMetadata track);
+        void MetadataMatch(ITrackMetadata track);
+        void MetadataMatchRetry(ITrackMetadata track, int matchRetryCount);
+        void MetadataNoMatch(ITrackMetadata track);
+        void BeginUploadSample(ITrackMetadata track);
+        void EndUploadSample(ITrackMetadata track, string responseCode);
+        void BeginSessionRequest(ITrackMetadata track);
+        void RetrySessionRequest(ITrackMetadata track, int retryCount);
+        void EndSessionRequest(ITrackMetadata track);
+        void BeginUploadTrack(ITrackMetadata track);
+        void EndUploadTrack(ITrackMetadata track, string status, string serverFileReference);
+        void EndTrack(ITrackMetadata track);
 
         void SendProgress(int p);
     }

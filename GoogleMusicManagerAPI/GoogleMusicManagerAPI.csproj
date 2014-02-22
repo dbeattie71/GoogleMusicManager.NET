@@ -78,6 +78,9 @@
     <Compile Include="Protocol\Locker.cs" />
     <Compile Include="Protocol\Uits.cs" />
     <Compile Include="Protocol\Upload.cs" />
+    <Compile Include="TrackMetadata\ITrackMetadata.cs" />
+    <Compile Include="TrackMetadata\TrackMetadata.cs" />
+    <Compile Include="TrackMetadata\TrackMetadataFacade.cs" />
     <Compile Include="TrackUploadState.cs" />
     <Compile Include="DeviceId\MacAddressDeviceId.cs" />
     <Compile Include="UploadProcess.cs" />

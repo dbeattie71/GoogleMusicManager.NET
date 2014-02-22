@@ -1,4 +1,5 @@
 ﻿using GoogleMusicManagerAPI;
+using GoogleMusicManagerAPI.TrackMetadata;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,12 +20,16 @@ namespace GoogleMusicManagerCLI
                 {
                     "*.mp3",
                     "*.wma",
+                    "*.m4a",
                 };
 
                 var fileList = extensions.Select(p => Directory.GetFiles(path, p, options.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).SelectMany(p => p);
 
+                var trackMetadataFacade = new TrackMetadataFacade();
+                var trackMetadataList = fileList.Select(p => trackMetadataFacade.CreateTrackMetadata(p));
+
                 var uploader = new UploadProcess(new OauthTokenStorage(options.OauthFile), new UploadProcessObserver());
-                var uploaderTask = uploader.DoUpload(fileList);
+                var uploaderTask = uploader.DoUpload(trackMetadataList);
                 uploaderTask.Wait();
                 var success = uploaderTask.Result;
             }

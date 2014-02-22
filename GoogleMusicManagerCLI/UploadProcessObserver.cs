@@ -1,16 +1,16 @@
 ﻿using GoogleMusicManagerAPI;
+using GoogleMusicManagerAPI.TrackMetadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using wireless_android_skyjam;
 
 namespace GoogleMusicManagerCLI
 {
     class UploadProcessObserver : IUploadProcessObserver
     {
-        private Track track;
+        private ITrackMetadata track;
         private string operation = string.Empty;
         private int progress = 0;
         private bool enableProgress = false;
@@ -23,23 +23,23 @@ namespace GoogleMusicManagerCLI
             var result = "\r";
 
             result += string.Format(
-                "{0, -4}", track.track_number.ToString()
+                "{0, -4}", track.TrackNumber.ToString()
                 );
 
-            if (track.title.Length > 35)
+            if (track.Title.Length > 35)
             {
-                result += track.title.Substring(0, 35);
+                result += track.Title.Substring(0, 35);
             }
             else
             {
-                result += track.title.PadRight(35);
+                result += track.Title.PadRight(35);
             }
 
-            var length = new TimeSpan(0, 0, 0, 0, (int)track.duration_millis);
+            var length = track.Duration;
             result += length.ToString(@"mm\:ss");
             result += " ";
 
-            result += string.Format("{0, -4}", track.original_bit_rate);
+            result += string.Format("{0, -4}", track.AudioBitrate);
             result += " ";
 
             result += this.operation;
@@ -64,22 +64,22 @@ namespace GoogleMusicManagerCLI
             Console.Write(this.GetProgress());
         }
 
-        public void BeginTrack(wireless_android_skyjam.Track track)
+        public void BeginTrack(ITrackMetadata track)
         {
-            if (this.lastArtist != track.artist)
+            if (this.lastArtist != track.Artist)
             {
-                this.lastArtist = track.artist;
+                this.lastArtist = track.Artist;
                 Console.Write("Artist: ");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(track.artist);
+                Console.WriteLine(track.Artist);
                 Console.ResetColor();
             }
-            if (this.lastAlbum != track.album)
+            if (this.lastAlbum != track.Album)
             {
-                this.lastAlbum = track.album;
+                this.lastAlbum = track.Album;
                 Console.Write("Album: ");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(track.album);
+                Console.WriteLine(track.Album);
                 Console.ResetColor();
             }
 
@@ -87,48 +87,48 @@ namespace GoogleMusicManagerCLI
             this.SetProgress(string.Empty, false);
         }
 
-        public void BeginMetadata(wireless_android_skyjam.Track track)
+        public void BeginMetadata(ITrackMetadata track)
         {
             this.SetProgress("Sending metadata...", false);
         }
 
-        public void MetadataMatch(wireless_android_skyjam.Track track)
+        public void MetadataMatch(ITrackMetadata track)
         {
             this.SetProgress("Metadata matched...", false);
         }
 
-        public void MetadataMatchRetry(wireless_android_skyjam.Track track, int matchRetryCount)
+        public void MetadataMatchRetry(ITrackMetadata track, int matchRetryCount)
         {
             this.SetProgress("Metadata retry " + matchRetryCount, false);
         }
 
-        public void MetadataNoMatch(wireless_android_skyjam.Track track)
+        public void MetadataNoMatch(ITrackMetadata track)
         {
             this.SetProgress("Metadata no match", false);
         }
 
-        public void BeginUploadSample(wireless_android_skyjam.Track track)
+        public void BeginUploadSample(ITrackMetadata track)
         {
             this.SetProgress("Uploading sample", true);
         }
 
-        public void EndUploadSample(wireless_android_skyjam.Track track, wireless_android_skyjam.TrackSampleResponse.ResponseCode responseCode)
+        public void EndUploadSample(ITrackMetadata track, string responseCode)
         {
             this.SetProgress("Sample result: " + responseCode.ToString().ToLower().Replace("_", " "), false);
         }
 
 
-        public void BeginUploadTrack(wireless_android_skyjam.Track track)
+        public void BeginUploadTrack(ITrackMetadata track)
         {
             this.SetProgress("Uploading track", true);
         }
 
-        public void EndUploadTrack(wireless_android_skyjam.Track track, string status, string serverFileReference)
+        public void EndUploadTrack(ITrackMetadata track, string status, string serverFileReference)
         {
             this.SetProgress("Upload track result: " + status.ToString().ToLower().Replace("_", " "), false);
         }
 
-        public void EndTrack(Track track)
+        public void EndTrack(ITrackMetadata track)
         {
             Console.WriteLine();
         }
@@ -144,17 +144,17 @@ namespace GoogleMusicManagerCLI
         }
 
 
-        public void BeginSessionRequest(Track track)
+        public void BeginSessionRequest(ITrackMetadata track)
         {
             this.SetProgress("Uploading session request...", false);
         }
 
-        public void RetrySessionRequest(Track track, int retryCount)
+        public void RetrySessionRequest(ITrackMetadata track, int retryCount)
         {
             this.SetProgress("Retry session request " + retryCount, false);
         }
 
-        public void EndSessionRequest(Track track)
+        public void EndSessionRequest(ITrackMetadata track)
         {
             this.SetProgress("Received session", false);
         }

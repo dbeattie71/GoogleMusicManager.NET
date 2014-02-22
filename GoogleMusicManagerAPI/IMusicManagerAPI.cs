@@ -1,4 +1,5 @@
 ﻿using GoogleMusicManagerAPI.Messages;
+using GoogleMusicManagerAPI.TrackMetadata;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace GoogleMusicManagerAPI
     public interface IMusicManagerAPI
     {
         Task<UploadResponse> UploaderAuthenticate();
-        Track BuildTrack(string filename);
+        Track BuildTrack(ITrackMetadata filename);
         Task<UploadResponse> UploadMetadata(IEnumerable<Track> tracks);
         TrackSample BuildTrackSample(Track track, SignedChallengeInfo challenge, string filename);
         Task<UploadResponse> UploadSample(IEnumerable<TrackSample> tracks);

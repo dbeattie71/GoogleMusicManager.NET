@@ -1,4 +1,5 @@
 ﻿using GoogleMusicManagerAPI.Messages;
+using GoogleMusicManagerAPI.TrackMetadata;
 using Newtonsoft.Json;
 using ProtoBuf;
 using System;
@@ -13,7 +14,7 @@ using wireless_android_skyjam;
 
 namespace GoogleMusicManagerAPI
 {
-    public class MusicManagerAPI : GoogleMusicManagerAPI.IMusicManagerAPI
+    public class MusicManagerAPI : IMusicManagerAPI
     {
         IGoogleOauth2HTTP oauth2Client;
         IDeviceId clientId;
@@ -175,31 +176,25 @@ namespace GoogleMusicManagerAPI
             return uploadSessionRequest;
         }
 
-        public Track BuildTrack(string filename)
+        public Track BuildTrack(ITrackMetadata trackMetadata)
         {
-            var fileInfo = new FileInfo(filename);
-            var lastwrite = File.GetLastWriteTimeUtc(filename);
-            var tagLibFile = TagLib.File.Create(filename);
-            var tags = tagLibFile.Tag;
-            var properties = tagLibFile.Properties;
-
             var track = new Track()
             {
-                album = tags.Album,
-                album_artist = tags.JoinedAlbumArtists,
-                artist = tags.JoinedArtists,
-                title = tags.Title,
-                year = (int)tags.Year,
-                genre = tags.JoinedGenres,
-                disc_number = (int)tags.Disc,
-                total_disc_count = (int)tags.DiscCount,
-                total_track_count = (int)tags.TrackCount,
-                duration_millis = (long)properties.Duration.TotalMilliseconds, //    (properties.Duration.TotalSeconds -1) * 1000,
-                original_bit_rate = properties.AudioBitrate,
-                track_number = (int)tags.Track,
-                client_id = GetClientIdForFile(filename),
-                estimated_size = fileInfo.Length,
-                last_modified_timestamp = this.ConvertToTimestamp(lastwrite),
+                album = trackMetadata.Album,
+                album_artist = trackMetadata.AlbumArtist,
+                artist = trackMetadata.Artist,
+                title = trackMetadata.Title,
+                year = (int)trackMetadata.Year,
+                genre = trackMetadata.Genre,
+                disc_number = (int)trackMetadata.DiscNumber,
+                total_disc_count = (int)trackMetadata.TotalDiscCount,
+                total_track_count = (int)trackMetadata.TotalTrackCount,
+                duration_millis = (long)trackMetadata.Duration.TotalMilliseconds,
+                original_bit_rate = trackMetadata.AudioBitrate,
+                track_number = (int)trackMetadata.TrackNumber,
+                client_id = GetClientIdForFile(trackMetadata.FileName),
+                estimated_size = trackMetadata.FileSize,
+                last_modified_timestamp = this.ConvertToTimestamp(trackMetadata.LastModified),
             };
 
             return track;

@@ -1,6 +1,7 @@
 ﻿using GoogleMusicManagerAPI.DeviceId;
 using GoogleMusicManagerAPI.HTTPHeaders;
 using GoogleMusicManagerAPI.Messages;
+using GoogleMusicManagerAPI.TrackMetadata;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,7 +56,7 @@ namespace GoogleMusicManagerAPI
         }
 
 
-        public async Task<bool> DoUpload(IEnumerable<string> fileList)
+        public async Task<bool> DoUpload(IEnumerable<ITrackMetadata> fileList)
         {
             await this.OauthAuthenticate();
             await this.AuthenticateUploader();
@@ -65,9 +66,9 @@ namespace GoogleMusicManagerAPI
             await api.UpdateUploadStateStart();
             foreach (var us in uploadState.OrderBy(p => p.Track.artist).ThenBy(p => p.Track.year).ThenBy(p => p.Track.album).ThenBy(p => p.Track.disc_number).ThenBy(p => p.Track.track_number))
             {
-                this.observer.BeginTrack(us.Track);
+                this.observer.BeginTrack(us.TrackMetaData);
                 await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
-                this.observer.EndTrack(us.Track);
+                this.observer.EndTrack(us.TrackMetaData);
             }
             await api.UpdateUploadStateStopped();
             return true;
@@ -77,42 +78,42 @@ namespace GoogleMusicManagerAPI
         {
             var matchRetryCount = 0;
 
-            this.observer.BeginMetadata(us.Track);
+            this.observer.BeginMetadata(us.TrackMetaData);
             while (us.SignedChallengeInfo == null)
             {
                 await this.UploadMetadata(new List<TrackUploadState>() { us });
                 if (us.SignedChallengeInfo != null)
                 {
-                    this.observer.MetadataMatch(us.Track);
+                    this.observer.MetadataMatch(us.TrackMetaData);
                 }
                 else if (matchRetryCount < 10)
                 {
                     matchRetryCount++;
-                    var newClientId = GetRandomClientId(us.FileName, matchRetryCount);
+                    var newClientId = GetRandomClientId(us.TrackMetaData.FileName, matchRetryCount);
                     us.Track.client_id = newClientId;
-                    this.observer.MetadataMatchRetry(us.Track, matchRetryCount);
+                    this.observer.MetadataMatchRetry(us.TrackMetaData, matchRetryCount);
                 }
                 else
                 {
-                    this.observer.MetadataNoMatch(us.Track);
+                    this.observer.MetadataNoMatch(us.TrackMetaData);
                     break;
                 }
             }
 
             if (us.SignedChallengeInfo != null)
             {
-                observer.BeginUploadSample(us.Track);
+                observer.BeginUploadSample(us.TrackMetaData);
                 await this.UploadSample(new List<TrackUploadState>() { us });
-                observer.EndUploadSample(us.Track, us.TrackSampleResponse.response_code);
+                observer.EndUploadSample(us.TrackMetaData, us.TrackSampleResponse.response_code.ToString());
             }
 
             if (us.TrackSampleResponse != null && us.TrackSampleResponse.response_code == TrackSampleResponse.ResponseCode.UPLOAD_REQUESTED)
             {
                 var uploadSessionResponse = await GetUploadSession(us, position, trackCount);
 
-                observer.BeginUploadTrack(us.Track);
-                var uploadResult = await api.UploadTrack(uploadSessionResponse, us.FileName);
-                observer.EndUploadTrack(us.Track,
+                observer.BeginUploadTrack(us.TrackMetaData);
+                var uploadResult = await api.UploadTrack(uploadSessionResponse, us.TrackMetaData.FileName);
+                observer.EndUploadTrack(us.TrackMetaData,
                     uploadResult.sessionStatus.externalFieldTransfers.First().status,
                     uploadResult.sessionStatus.additionalInfo.googleRupioAdditionalInfo.completionInfo.customerSpecificInfo.ServerFileReference
                     );
@@ -124,28 +125,28 @@ namespace GoogleMusicManagerAPI
         private async Task<UploadSessionResponse> GetUploadSession(TrackUploadState us, int position, int trackCount)
         {
             var retryCount = 0;
-            observer.BeginSessionRequest(us.Track);
+            observer.BeginSessionRequest(us.TrackMetaData);
             while (true)
             {
-                var uploadSessionResponse = await api.GetUploadSession(us.FileName, us.Track, us.TrackSampleResponse, position, trackCount);
+                var uploadSessionResponse = await api.GetUploadSession(us.TrackMetaData.FileName, us.Track, us.TrackSampleResponse, position, trackCount);
 
                 if (uploadSessionResponse.sessionStatus != null)
                 {
-                    observer.EndSessionRequest(us.Track);
+                    observer.EndSessionRequest(us.TrackMetaData);
                     return uploadSessionResponse;
                 }
                 else
                 {
                     await Task.Delay(1000);
                     retryCount++;
-                    observer.RetrySessionRequest(us.Track, retryCount);
+                    observer.RetrySessionRequest(us.TrackMetaData, retryCount);
                 }
             }
         }
 
         private async Task<bool> UploadSample(IEnumerable<TrackUploadState> uploadStateList)
         {
-            var trackSamples = uploadStateList.Select(p => api.BuildTrackSample(p.Track, p.SignedChallengeInfo, p.FileName)).ToList();
+            var trackSamples = uploadStateList.Select(p => api.BuildTrackSample(p.Track, p.SignedChallengeInfo, p.TrackMetaData.FileName)).ToList();
 
             var response = await api.UploadSample(trackSamples);
 
@@ -166,11 +167,11 @@ namespace GoogleMusicManagerAPI
             return uploadState;
         }
 
-        private List<TrackUploadState> BuildUploadState(IEnumerable<string> fileList)
+        private List<TrackUploadState> BuildUploadState(IEnumerable<ITrackMetadata> fileList)
         {
-            var uploadState = fileList.OrderBy(p => p).Select(p => new TrackUploadState()
+            var uploadState = fileList.OrderBy(p => p.FileName).Select(p => new TrackUploadState()
             {
-                FileName = p,
+                TrackMetaData = p,
                 Track = api.BuildTrack(p),
             }).ToList();
 

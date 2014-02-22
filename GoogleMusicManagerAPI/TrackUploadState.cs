@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoogleMusicManagerAPI.TrackMetadata;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,8 @@ namespace GoogleMusicManagerAPI
 {
     internal class TrackUploadState
     {
-        public string FileName { get; set; }
+        public ITrackMetadata TrackMetaData { get; set; }
+
         public string ClientId
         {
             get
