@@ -3,6 +3,7 @@ using GoogleMusicManagerAPI.TrackMetadata;
 using GoogleMusicManagerAPI.TrackSampleEncoder;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 
@@ -32,7 +33,7 @@ namespace GoogleMusicManagerCLI
                 var uploader = new UploadProcess(
                     new OauthTokenStorage(options.OauthFile), 
                     new UploadProcessObserver(),
-                    new AVConvEncoder()
+                    new AVConvEncoder(ConfigurationManager.AppSettings["avconvpath"])
                     );
                 var uploaderTask = uploader.DoUpload(trackMetadataList);
                 uploaderTask.Wait();

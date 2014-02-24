@@ -17,7 +17,7 @@ namespace GoogleMusicManagerAPI.TrackSampleEncoder
 
         public AVConvEncoder(string pathToExe)
         {
-            this.pathToExe = pathToExe;
+            this.pathToExe = pathToExe ?? string.Empty;
         }
 
         public byte[] GetMP3Sample(string filename, int start, int duration)
