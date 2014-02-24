@@ -1,14 +1,12 @@
 ﻿using GoogleMusicManagerAPI.Messages;
 using GoogleMusicManagerAPI.TrackMetadata;
+using GoogleMusicManagerAPI.TrackSampleEncoder;
 using Newtonsoft.Json;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using wireless_android_skyjam;
 
@@ -18,11 +16,24 @@ namespace GoogleMusicManagerAPI
     {
         IGoogleOauth2HTTP oauth2Client;
         IDeviceId clientId;
+        ITrackSampleEncoder encoder;
 
-        public MusicManagerAPI(IGoogleOauth2HTTP oauth2Client, IDeviceId clientId)
+        public MusicManagerAPI(
+            IGoogleOauth2HTTP oauth2Client, 
+            IDeviceId clientId
+            )
         {
             this.oauth2Client = oauth2Client;
             this.clientId = clientId;
+        }
+        public MusicManagerAPI(
+            IGoogleOauth2HTTP oauth2Client,
+            IDeviceId clientId,
+            ITrackSampleEncoder encoder
+            )
+            : this(oauth2Client, clientId)
+        {
+            this.encoder = encoder;
         }
 
         public async Task<UploadResponse> UploaderAuthenticate()
@@ -224,38 +235,10 @@ namespace GoogleMusicManagerAPI
             var start = challenge.challenge_info.start_millis / 1000;
             var duration = challenge.challenge_info.duration_millis / 1000;
 
-            var bytes = GetMP3Sample(filename, (int)start, (int)duration);
+            var bytes = this.encoder.GetMP3Sample(filename, (int)start, (int)duration);
             ts.sample = bytes;
             //ts.sample = new byte[100];
             return ts;
-        }
-
-        private static byte[] GetMP3Sample(string filename, int start, int duration)
-        {
-            var tempFileName = Path.GetTempPath() + Path.GetFileNameWithoutExtension(filename) + "_sample" + ".mp3";
-            if (File.Exists(tempFileName))
-            {
-                File.Delete(tempFileName);
-            }
-            var argumentTemplate = "-i \"{0}\" -t {1} -ss {2} -ab 128k -f s16le -c libmp3lame \"{3}\"";
-
-            var populatedArguments = string.Format(argumentTemplate, filename, duration, start, tempFileName);
-
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "avconv.exe",
-                    Arguments = populatedArguments,
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                }
-            };
-            process.Start();
-            process.WaitForExit();
-
-            var bytes = File.ReadAllBytes(tempFileName);
-            File.Delete(tempFileName);
-            return bytes;
         }
 
         public async Task<GetTracksToExportResponse> GetTracksToExport(string continuationToken)
@@ -318,7 +301,7 @@ namespace GoogleMusicManagerAPI
             using (var results = await oauth2Client.Request(HttpMethod.Post, new Uri("https://android.clients.google.com/upsj/sample?version=1"), requestStream))
             {
                 var uploaderResponse = Serializer.Deserialize<UploadResponse>(results);
-                return uploaderResponse.auth_status ==  UploadResponse.AuthStatus.OK;
+                return uploaderResponse.auth_status == UploadResponse.AuthStatus.OK;
             }
         }
 

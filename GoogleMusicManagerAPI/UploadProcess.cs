@@ -2,6 +2,7 @@
 using GoogleMusicManagerAPI.HTTPHeaders;
 using GoogleMusicManagerAPI.Messages;
 using GoogleMusicManagerAPI.TrackMetadata;
+using GoogleMusicManagerAPI.TrackSampleEncoder;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,7 @@ namespace GoogleMusicManagerAPI
         private Oauth2API oauthApi;
         private IUploadProcessObserver observer;
 
-        public UploadProcess(IOauthTokenStorage tokenStorage, IUploadProcessObserver observer)
+        public UploadProcess(IOauthTokenStorage tokenStorage, IUploadProcessObserver observer, ITrackSampleEncoder encoder)
         {
             var progressHandler = new ProgressMessageHandler();
             progressHandler.HttpSendProgress += progressHandler_HttpSendProgress;
@@ -32,29 +33,23 @@ namespace GoogleMusicManagerAPI
                     new Oauth2HeaderBuilder(tokenStorage),
                 }, progressHandler
             );
-            this.api = new MusicManagerAPI(client, new MacAddressDeviceId());
+            this.api = new MusicManagerAPI(
+                client,
+                new MacAddressDeviceId(),
+                encoder
+                );
             this.oauthApi = new Oauth2API(tokenStorage);
             this.observer = observer;
         }
 
         void progressHandler_HttpReceiveProgress(object sender, HttpProgressEventArgs e)
         {
-            // Debug.WriteLine("Receive: " + e.ProgressPercentage.ToString());
-
-            // Console.WriteLine(e.ProgressPercentage.ToString("   "));
         }
 
         void progressHandler_HttpSendProgress(object sender, HttpProgressEventArgs e)
         {
-            // Debug.WriteLine("Send: " + e.ProgressPercentage.ToString());
-            //var progress = e.ProgressPercentage.ToString();
-            //progress = "\b\b\b" + new String(' ', 3 - progress.Length) + progress;
-
             this.observer.SendProgress(e.ProgressPercentage);
-
-            //Console.Write(progress);
         }
-
 
         public async Task<bool> DoUpload(IEnumerable<ITrackMetadata> fileList)
         {

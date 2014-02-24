@@ -1,5 +1,6 @@
 ﻿using GoogleMusicManagerAPI;
 using GoogleMusicManagerAPI.TrackMetadata;
+using GoogleMusicManagerAPI.TrackSampleEncoder;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +29,11 @@ namespace GoogleMusicManagerCLI
                 var trackMetadataFacade = new TrackMetadataFacade();
                 var trackMetadataList = fileList.Select(p => trackMetadataFacade.CreateTrackMetadata(p));
 
-                var uploader = new UploadProcess(new OauthTokenStorage(options.OauthFile), new UploadProcessObserver());
+                var uploader = new UploadProcess(
+                    new OauthTokenStorage(options.OauthFile), 
+                    new UploadProcessObserver(),
+                    new AVConvEncoder()
+                    );
                 var uploaderTask = uploader.DoUpload(trackMetadataList);
                 uploaderTask.Wait();
                 var success = uploaderTask.Result;
