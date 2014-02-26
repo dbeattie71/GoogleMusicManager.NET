@@ -59,7 +59,9 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AVConvEncoderTest.cs" />
+    <Compile Include="EncoderTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NAudioLameEncoderTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GoogleMusicManagerAPI\GoogleMusicManagerAPI.csproj">

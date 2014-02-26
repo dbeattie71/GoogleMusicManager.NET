@@ -33,7 +33,8 @@ namespace GoogleMusicManagerCLI
                 var uploader = new UploadProcess(
                     new OauthTokenStorage(options.OauthFile), 
                     new UploadProcessObserver(),
-                    new AVConvEncoder(ConfigurationManager.AppSettings["avconvpath"])
+                    new NAudioLameEncoder()
+                    //new AVConvEncoder(ConfigurationManager.AppSettings["avconvpath"])
                     );
                 var uploaderTask = uploader.DoUpload(trackMetadataList);
                 uploaderTask.Wait();
