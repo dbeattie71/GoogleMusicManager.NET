@@ -51,7 +51,7 @@ namespace GoogleMusicManagerAPI
             this.observer.SendProgress(e.ProgressPercentage);
         }
 
-        public async Task<bool> DoUpload(IEnumerable<ITrackMetadata> fileList)
+        public async Task<bool> DoUpload(IEnumerable<ITrackMetadata> fileList, bool uploadTracks)
         {
             await this.OauthAuthenticate();
             await this.AuthenticateUploader();
@@ -62,14 +62,14 @@ namespace GoogleMusicManagerAPI
             foreach (var us in uploadState.OrderBy(p => p.Track.artist).ThenBy(p => p.Track.year).ThenBy(p => p.Track.album).ThenBy(p => p.Track.disc_number).ThenBy(p => p.Track.track_number))
             {
                 this.observer.BeginTrack(us.TrackMetaData);
-                await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count);
+                await this.UploadTrack(us, uploadState.IndexOf(us) + 1, uploadState.Count, uploadTracks);
                 this.observer.EndTrack(us.TrackMetaData);
             }
             await api.UpdateUploadStateStopped();
             return true;
         }
 
-        private async Task<bool> UploadTrack(TrackUploadState us, int position, int trackCount)
+        private async Task<bool> UploadTrack(TrackUploadState us, int position, int trackCount, bool uploadTrack)
         {
             var matchRetryCount = 0;
 
@@ -102,7 +102,7 @@ namespace GoogleMusicManagerAPI
                 observer.EndUploadSample(us.TrackMetaData, us.TrackSampleResponse.response_code.ToString());
             }
 
-            if (us.TrackSampleResponse != null && us.TrackSampleResponse.response_code == TrackSampleResponse.ResponseCode.UPLOAD_REQUESTED)
+            if (uploadTrack && us.TrackSampleResponse != null && us.TrackSampleResponse.response_code == TrackSampleResponse.ResponseCode.UPLOAD_REQUESTED)
             {
                 var uploadSessionResponse = await GetUploadSession(us, position, trackCount);
 

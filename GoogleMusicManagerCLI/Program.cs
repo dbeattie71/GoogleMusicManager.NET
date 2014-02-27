@@ -36,7 +36,7 @@ namespace GoogleMusicManagerCLI
                     new NAudioLameEncoder()
                     //new AVConvEncoder(ConfigurationManager.AppSettings["avconvpath"])
                     );
-                var uploaderTask = uploader.DoUpload(trackMetadataList);
+                var uploaderTask = uploader.DoUpload(trackMetadataList, !options.NoUpload);
                 uploaderTask.Wait();
                 var success = uploaderTask.Result;
             }
