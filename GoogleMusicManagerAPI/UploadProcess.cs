@@ -201,31 +201,5 @@ namespace GoogleMusicManagerAPI
             var token = await oauthApi.Authenticate();
             return token;
         }
-
-        //private T ReadFromFile<T>(string filename)
-        //{
-        //    var bytes = File.ReadAllBytes(filename);
-        //    using (var ms = new MemoryStream(bytes))
-        //    {
-        //        var uploadResponse = Serializer.Deserialize<T>(ms);
-        //        return uploadResponse;
-        //    }
-        //}
-
-        //private void WriteToFile(string filename, object o)
-        //{
-        //    using (var ms = new MemoryStream())
-        //    {
-        //        Serializer.Serialize(ms, o);
-        //        ms.Position = 0;
-        //        File.WriteAllBytes(filename, ms.ToArray());
-        //    }
-        //}
-
-
     }
-
-
-
-
 }

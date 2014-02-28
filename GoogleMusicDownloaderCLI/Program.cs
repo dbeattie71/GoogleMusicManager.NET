@@ -18,7 +18,8 @@ namespace GoogleMusicDownloaderCLI
             if (CommandLine.Parser.Default.ParseArguments(args, options))
             {
                 var downloader = new DownloadProcess(
-                    new OauthTokenStorage(options.OauthFile)
+                    new OauthTokenStorage(options.OauthFile),
+                    new DownloadProcessObserver()
                     );
 
                 var task = downloader.DoDownload(options.ArtistFilter, options.AlbumFilter, options.TrackFilter);

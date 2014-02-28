@@ -63,6 +63,7 @@
     <Compile Include="DownloadProcess.cs" />
     <Compile Include="GoogleOauth2HTTP.cs" />
     <Compile Include="HTTPHeaders\Oauth2HeaderBuilder.cs" />
+    <Compile Include="IDownloadProcessObserver.cs" />
     <Compile Include="IGoogleOauth2HTTP.cs" />
     <Compile Include="IHttpHeaderBuilder.cs" />
     <Compile Include="IMusicManagerAPI.cs" />

@@ -1,5 +1,6 @@
 ﻿using GoogleMusicManagerAPI.DeviceId;
 using GoogleMusicManagerAPI.HTTPHeaders;
+using GoogleMusicManagerAPI.TrackMetadata;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,8 +15,12 @@ namespace GoogleMusicManagerAPI
     {
         private IOauthTokenStorage oauth2Storage { get; set; }
         private IMusicManagerAPI api { get; set; }
+        private IDownloadProcessObserver observer { get; set; }
 
-        public DownloadProcess(IOauthTokenStorage oauth2Storage)
+        public DownloadProcess(
+            IOauthTokenStorage oauth2Storage,
+            IDownloadProcessObserver observer
+            )
         {
             var deviceId = new MacAddressDeviceId();
             this.oauth2Storage = oauth2Storage;
@@ -28,8 +33,8 @@ namespace GoogleMusicManagerAPI
                                 }),
                     deviceId
                 );
+            this.observer = observer;
         }
-
 
         public async Task<bool> DoDownload(string artist, string album, string title)
         {
@@ -42,27 +47,66 @@ namespace GoogleMusicManagerAPI
 
             var tracksToDownload = trackList.Where(p => string.IsNullOrEmpty(artist) || p.artist.ToLower().Contains(artist.ToLower()))
                 .Where(p => string.IsNullOrEmpty(album) || p.album.ToLower().Contains(album.ToLower()))
-                .Where(p => string.IsNullOrEmpty(title) || p.title.ToLower().Contains(title.ToLower()));
+                .Where(p => string.IsNullOrEmpty(title) || p.title.ToLower().Contains(title.ToLower()))
+                .OrderBy(p => p.artist)
+                .ThenBy(p => p.album)
+                .ThenBy(p => p.track_number)
+                .ThenBy(p => p.title)
+                .ToList();
+
+            this.observer.BeginDownloadTracks(tracksToDownload.Select(p => CreateTrackMetadata(p)));
 
             foreach (var track in tracksToDownload)
             {
-                var songid = track.id;
-
-                var info = await api.GetTracksUrl(songid);
-
-                var bytes = await api.DownloadTrack(info.url);
-
-                var folderPath = GetOutputDirectory(track);
-                Directory.CreateDirectory(folderPath);
-
-                var filename = GetOutputFilename(track);
+                this.observer.BeginDownloadTrack(CreateTrackMetadata(track));
                 
+                var filename = GetOutputFilename(track);
+                var folderPath = GetOutputDirectory(track);
                 var fullpath = Path.Combine(folderPath, filename);
 
-                File.WriteAllBytes(fullpath, bytes);
+                if (ShouldDownload(fullpath, track.track_size))
+                {
+                    var songid = track.id;
+                    var info = await api.GetTracksUrl(songid);
+                    var bytes = await api.DownloadTrack(info.url);
+                    Directory.CreateDirectory(folderPath);
+                    File.WriteAllBytes(fullpath, bytes);
+                    this.observer.EndDownloadTrack(CreateTrackMetadata(track));
+                }
+                else
+                {
+                    this.observer.DownloadTrackExists(CreateTrackMetadata(track));
+                }
+
             }
 
             return true;
+        }
+
+        private ITrackMetadata CreateTrackMetadata(DownloadTrackInfo p)
+        {
+            var trackMetadata = new TrackMetadata.TrackMetadata()
+            {
+                Album = p.album,
+                AlbumArtist = p.album_artist,
+                Artist = p.artist,
+                DiscNumber = (uint)p.disc_number,
+                FileSize = p.track_size,
+                TotalDiscCount = (uint)p.total_disc_count,
+                Title = p.title,
+                TrackNumber = (uint)p.track_number,
+            };
+            return trackMetadata;
+        }
+
+        private static bool ShouldDownload(string filename, long size)
+        {
+            if (File.Exists(filename) == false) return true;
+
+            return false;
+            var fileInfo = new FileInfo(filename);
+
+            return fileInfo.Length != size;
         }
 
         private static string GetOutputFilename(DownloadTrackInfo track)
