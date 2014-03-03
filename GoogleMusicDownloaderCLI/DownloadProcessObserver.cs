@@ -96,12 +96,23 @@ namespace GoogleMusicDownloaderCLI
             }
 
             this.track = trackMetadata;
-            this.SetProgress(string.Empty, false);
+            this.SetProgress(string.Empty, true);
         }
 
         public void EndDownloadTrack(ITrackMetadata trackMetadata)
         {
+            this.SetProgress("Complete", false);
             Console.WriteLine();
+        }
+
+
+        public void ReceiveProgress(int p)
+        {
+            if (enableProgress)
+            {
+                this.progress = p;
+                Console.Write(this.GetProgress());
+            }
         }
     }
 }

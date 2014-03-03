@@ -16,5 +16,6 @@ namespace GoogleMusicManagerAPI
         void BeginDownloadTrack(ITrackMetadata trackMetadata);
 
         void EndDownloadTrack(ITrackMetadata trackMetadata);
+        void ReceiveProgress(int p);
     }
 }

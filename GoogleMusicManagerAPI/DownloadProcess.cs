@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Handlers;
 using System.Text;
 using System.Threading.Tasks;
 using wireless_android_skyjam;
@@ -22,6 +23,10 @@ namespace GoogleMusicManagerAPI
             IDownloadProcessObserver observer
             )
         {
+            var progressHandler = new ProgressMessageHandler();
+            progressHandler.HttpSendProgress += progressHandler_HttpSendProgress;
+            progressHandler.HttpReceiveProgress += progressHandler_HttpReceiveProgress;
+
             var deviceId = new MacAddressDeviceId();
             this.oauth2Storage = oauth2Storage;
             this.api = new MusicManagerAPI(
@@ -30,10 +35,20 @@ namespace GoogleMusicManagerAPI
                                     new Oauth2HeaderBuilder(oauth2Storage),
                                     new MusicManagerHeaderBuilder(),
                                     new DeviceIDHeaderBuilder(deviceId),
-                                }),
+                                },
+                    progressHandler),
                     deviceId
                 );
             this.observer = observer;
+        }
+
+        void progressHandler_HttpReceiveProgress(object sender, HttpProgressEventArgs e)
+        {
+            this.observer.ReceiveProgress(e.ProgressPercentage);
+        }
+
+        void progressHandler_HttpSendProgress(object sender, HttpProgressEventArgs e)
+        {
         }
 
         public async Task<bool> DoDownload(string artist, string album, string title)
@@ -59,7 +74,7 @@ namespace GoogleMusicManagerAPI
             foreach (var track in tracksToDownload)
             {
                 this.observer.BeginDownloadTrack(CreateTrackMetadata(track));
-                
+
                 var filename = GetOutputFilename(track);
                 var folderPath = GetOutputDirectory(track);
                 var fullpath = Path.Combine(folderPath, filename);
