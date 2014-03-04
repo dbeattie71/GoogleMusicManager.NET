@@ -27,11 +27,13 @@ namespace GoogleMusicWebClientAPI
 
         private GoogleHTTP Client { get; set; }
 
+        private IGoogleCookieManager cookieManager { get; set; }
+
         public API(ISessionStorage settings)
         {
             this.Settings = settings;
-            var cookieManager = new GoogleCookieManager();
-            this.Client = new GoogleHTTP(cookieManager);
+            this.cookieManager = new GoogleCookieManager();
+            this.Client = new GoogleHTTP(this.cookieManager);
             this.Client.CookiesChanged += client_CookiesChanged;
         }
 
@@ -95,7 +97,7 @@ namespace GoogleMusicWebClientAPI
             // var sessionId = "23u9sqlx13vn";
             var sessionId = "f4n3098h48h4"; //TODO some session id (client side generated?)
 
-            url = url.Replace("{0}", this.Client.GetXtCookie());
+            url = url.Replace("{0}", this.cookieManager.GetXtCookie());
             url = url.Replace("{1}", sessionId);
 
             var playlist = await this.Client.GET(new Uri(url));
@@ -318,7 +320,7 @@ namespace GoogleMusicWebClientAPI
 
         public bool NeedsAuth()
         {
-            return this.Client.AuthroizationToken.Equals(String.Empty);
+            return this.Client.AuthorizationToken.Equals(String.Empty);
         }
 
         void client_CookiesChanged(object sender, EventArgs e)
@@ -334,8 +336,8 @@ namespace GoogleMusicWebClientAPI
             {
                 googleClient = JSON.SerializeObject(new Session()
                 {
-                    AuthToken = this.Client.AuthroizationToken,
-                    Cookies = this.Client.CookieManager.GetCookiesList()
+                    AuthToken = this.Client.AuthorizationToken,
+                    Cookies = this.cookieManager.GetCookiesList()
                 });
 
                 Settings.SetSerializedValue("session", googleClient, true);
@@ -356,8 +358,8 @@ namespace GoogleMusicWebClientAPI
             {
                 tmp = JSON.DeserializeObject<Session>(Settings.GetSerializedStringValue("session", true));
 
-                this.Client.AuthroizationToken = tmp.AuthToken;
-                this.Client.CookieManager.SetCookiesFromList(tmp.Cookies);
+                this.Client.AuthorizationToken = tmp.AuthToken;
+                this.cookieManager.SetCookiesFromList(tmp.Cookies);
 
             }
             catch

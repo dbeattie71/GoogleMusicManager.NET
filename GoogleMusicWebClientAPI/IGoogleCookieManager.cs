@@ -10,5 +10,6 @@ namespace GoogleMusicWebClientAPI
         List<Cookie> GetCookiesList();
         bool HandleResponse(HttpResponseMessage msg);
         void SetCookiesFromList(List<Cookie> cookies);
+        string GetXtCookie();
     }
 }

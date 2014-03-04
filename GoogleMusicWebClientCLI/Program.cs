@@ -1,6 +1,7 @@
 ﻿using GoogleMusicWebClientAPI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -64,11 +65,15 @@ namespace GoogleMusicWebClientCLI
             WriteToFile(matched, "matched.txt");
             WriteToFile(unmatched, "unmatched.txt");
 
-            var firstSong = songList.First();
+            var firstSong = songList.Where(p => p.Type == 6).First();
 
             var urlTask = api.GetStreamURL(firstSong);
             urlTask.Wait();
             var url = urlTask.Result;
+
+            var exe = @"C:\Program Files (x86)\Windows Media Player\wmplayer.exe";
+            Process.Start(exe, url);
+
 
             //foreach (var song in SongList)
             //{

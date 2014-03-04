@@ -25,38 +25,20 @@ namespace GoogleMusicWebClientAPI
         /// </summary>
         private HttpClient client;
 
-        /// <summary>
-        /// This is required for each and every HTTP request
-        /// </summary>
-        ///
-        [DataMember(Name = "AuthToken")]
-        private String authroizationToken;
-        public System.String AuthroizationToken
-        {
-            get { return authroizationToken; }
-            set { authroizationToken = value; }
-        }
+        public string AuthorizationToken { get; set; }
 
-        [DataMember(Name = "AuthTokenIssueDate")]
-        private DateTime authTokenIssueDate;
-
-        public DateTime AuthTokenIssueDate
-        {
-            get { return authTokenIssueDate; }
-            set { authTokenIssueDate = value; }
-        }
+        public DateTime AuthTokenIssueDate { get; set; }
 
         public HttpStatusCode LastStatusCode { get; set; }
 
         public string RejectedReason { get; set; }
-
-        public IGoogleCookieManager CookieManager { get; set; }
+        private IGoogleCookieManager CookieManager { get; set; }
 
         public event EventHandler CookiesChanged;
 
         public GoogleHTTP(IGoogleCookieManager cookieManager)
         {
-            authroizationToken = String.Empty;
+            this.AuthorizationToken = String.Empty;
 
             HttpClientHandler handler = new HttpClientHandler
             {
@@ -77,7 +59,7 @@ namespace GoogleMusicWebClientAPI
             string CountTemplate = @"Auth=(?<AUTH>(.*?))$";
             Regex CountRegex = new Regex(CountTemplate, RegexOptions.IgnoreCase);
             string auth = CountRegex.Match(loginData).Groups["AUTH"].ToString();
-            authroizationToken = auth;
+            this.AuthorizationToken = auth;
 
             this.AuthTokenIssueDate = DateTime.Now;
         }
@@ -188,8 +170,8 @@ namespace GoogleMusicWebClientAPI
         /// </summary>
         private void SetAuthHeader()
         {
-            if (!authroizationToken.Equals(String.Empty))
-                client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(String.Format("GoogleLogin auth={0}", authroizationToken));
+            if (!this.AuthorizationToken.Equals(String.Empty))
+                client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(String.Format("GoogleLogin auth={0}", this.AuthorizationToken));
         }
 
         private bool CheckForUpdatedAuth(HttpResponseMessage responseMessage)
@@ -200,7 +182,7 @@ namespace GoogleMusicWebClientAPI
                 {
                     foreach (var v in header.Value)
                     {
-                        authroizationToken = v;
+                        this.AuthorizationToken = v;
                         return true;
                     }
                 }
@@ -236,7 +218,7 @@ namespace GoogleMusicWebClientAPI
         {
             return uri;
 
-            String xt = GetXtCookie();
+            String xt = this.CookieManager.GetXtCookie();
             if (xt.Equals(String.Empty))
                 return uri;
 
@@ -252,15 +234,6 @@ namespace GoogleMusicWebClientAPI
             return new Uri(uri.OriginalString + String.Format("?u=0&xt={0}", xt));
         }
 
-        public String GetXtCookie()
-        {
-            // Get the last one
-            String xt = "";
-            foreach (Cookie cook in this.CookieManager.GetCookiesList())
-                if (cook.Name.Equals("xt"))
-                    xt = cook.Value;
 
-            return xt;
-        }
     }
 }

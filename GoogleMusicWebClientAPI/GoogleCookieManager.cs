@@ -67,5 +67,16 @@ namespace GoogleMusicWebClientAPI
 
             return cookies;
         }
+
+        public String GetXtCookie()
+        {
+            // Get the last one
+            String xt = "";
+            foreach (Cookie cook in this.GetCookiesList())
+                if (cook.Name.Equals("xt"))
+                    xt = cook.Value;
+
+            return xt;
+        }
     }
 }
