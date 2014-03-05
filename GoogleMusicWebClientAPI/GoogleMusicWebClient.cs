@@ -12,6 +12,7 @@ using System.IO;
 
 using Byteopia.Helpers;
 using GoogleMusicWebClientAPI.StreamingLoadAllTracks;
+using GoogleMusicWebClientAPI.HttpHandlers;
 
 
 namespace GoogleMusicWebClientAPI
@@ -29,12 +30,15 @@ namespace GoogleMusicWebClientAPI
 
         private IGoogleCookieManager cookieManager { get; set; }
 
+        private AuthorizationTokenHttpHandler authorizationTokenHandler { get; set; }
+
         public API(ISessionStorage settings)
         {
             this.Settings = settings;
-            this.cookieManager = new GoogleCookieManager();
-            this.Client = new GoogleHTTP(this.cookieManager);
-            this.Client.CookiesChanged += client_CookiesChanged;
+            var cookieHandler = new CookieHttpHandler();
+            this.cookieManager = cookieHandler;
+            this.authorizationTokenHandler = new AuthorizationTokenHttpHandler();
+            this.Client = new GoogleHTTP(authorizationTokenHandler, cookieHandler);
         }
 
         public ObservableCollection<GoogleMusicPlaylist> Playlists = new ObservableCollection<GoogleMusicPlaylist>();
@@ -70,7 +74,7 @@ namespace GoogleMusicWebClientAPI
             if (this.Client.LastStatusCode == HttpStatusCode.Forbidden)
                 return false;
 
-            this.Client.SetAuthToken(loginData);
+            this.authorizationTokenHandler.SetAuthToken(loginData);
 
             // Hit the servers so our cookie container can store the cookies
             await HitForSessionCookies();
@@ -320,7 +324,7 @@ namespace GoogleMusicWebClientAPI
 
         public bool NeedsAuth()
         {
-            return this.Client.AuthorizationToken.Equals(String.Empty);
+            return this.authorizationTokenHandler.Equals(String.Empty);
         }
 
         void client_CookiesChanged(object sender, EventArgs e)
@@ -336,7 +340,7 @@ namespace GoogleMusicWebClientAPI
             {
                 googleClient = JSON.SerializeObject(new Session()
                 {
-                    AuthToken = this.Client.AuthorizationToken,
+                    AuthToken = this.authorizationTokenHandler.AuthorizationToken,
                     Cookies = this.cookieManager.GetCookiesList()
                 });
 
@@ -358,7 +362,7 @@ namespace GoogleMusicWebClientAPI
             {
                 tmp = JSON.DeserializeObject<Session>(Settings.GetSerializedStringValue("session", true));
 
-                this.Client.AuthorizationToken = tmp.AuthToken;
+                this.authorizationTokenHandler.AuthorizationToken = tmp.AuthToken;
                 this.cookieManager.SetCookiesFromList(tmp.Cookies);
 
             }

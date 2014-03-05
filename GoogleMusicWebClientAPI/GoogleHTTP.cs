@@ -8,7 +8,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 using Byteopia.Helpers;
 
 
@@ -18,50 +17,29 @@ namespace GoogleMusicWebClientAPI
     /// Wraps an HttpClient for use with Google requests
     /// </summary>
     ///
-    public class GoogleHTTP : GoogleMusicWebClientAPI.IGoogleHTTP
+    public class GoogleHTTP : IGoogleHTTP
     {
         /// <summary>
         /// The HttpClient
         /// </summary>
         private HttpClient client;
 
-        public string AuthorizationToken { get; set; }
-
-        public DateTime AuthTokenIssueDate { get; set; }
-
         public HttpStatusCode LastStatusCode { get; set; }
 
         public string RejectedReason { get; set; }
-        private IGoogleCookieManager CookieManager { get; set; }
 
-        public event EventHandler CookiesChanged;
-
-        public GoogleHTTP(IGoogleCookieManager cookieManager)
+        public GoogleHTTP(params DelegatingHandler[] handlers)
         {
-            this.AuthorizationToken = String.Empty;
-
             HttpClientHandler handler = new HttpClientHandler
             {
                 UseCookies = false,
                 AllowAutoRedirect = false
             };
 
-            client = new HttpClient(handler);
-            this.CookieManager = cookieManager;
-        }
-
-        /// <summary>
-        /// Set the auth token from the login data
-        /// </summary>
-        /// <param name="loginData"></param>
-        public void SetAuthToken(String loginData)
-        {
-            string CountTemplate = @"Auth=(?<AUTH>(.*?))$";
-            Regex CountRegex = new Regex(CountTemplate, RegexOptions.IgnoreCase);
-            string auth = CountRegex.Match(loginData).Groups["AUTH"].ToString();
-            this.AuthorizationToken = auth;
-
-            this.AuthTokenIssueDate = DateTime.Now;
+            client = HttpClientFactory.Create(
+                handler,
+                handlers
+                );
         }
 
         /// <summary>
@@ -97,23 +75,13 @@ namespace GoogleMusicWebClientAPI
         /// <returns></returns>
         public async Task<String> POST(Uri address, HttpContent content = null)
         {
-            SetAuthHeader();
-            //RebuildCookieContainer();
-
-            String reqUri = BuildGoogleRequest(address).ToString();
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, reqUri);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, address);
             requestMessage.Content = content;
-            requestMessage.Headers.Add("Cookie", this.CookieManager.GetCookies());
+
             var responseMessage = await client.SendAsync(requestMessage);
 
             LastStatusCode = responseMessage.StatusCode;
 
-            if (this.CookieManager.HandleResponse(responseMessage))
-                if (CookiesChanged != null)
-                    CookiesChanged(this, new EventArgs());
-
-            //CheckForCookies(responseMessage, address);
-            CheckForUpdatedAuth(responseMessage);
             CheckForRejection(responseMessage);
 
             var retnData = await responseMessage.Content.ReadAsStringAsync();
@@ -129,67 +97,22 @@ namespace GoogleMusicWebClientAPI
         /// <returns></returns>
         public async Task<String> GET(Uri address)
         {
-            SetAuthHeader();
-            //RebuildCookieContainer();
 
-
-            String reqUri = BuildGoogleRequest(address).ToString();
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, reqUri);
-            requestMessage.Headers.Add("Cookie", this.CookieManager.GetCookies());
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, address);
             var responseMessage = await client.SendAsync(requestMessage);
 
             LastStatusCode = responseMessage.StatusCode;
 
             responseMessage.EnsureSuccessStatusCode();
 
-            if (this.CookieManager.HandleResponse(responseMessage))
-                if (CookiesChanged != null)
-                    CookiesChanged(this, new EventArgs());
-
-            //CheckForCookies(responseMessage, address);
-            CheckForUpdatedAuth(responseMessage);
             CheckForRejection(responseMessage);
 
-            String retnData = String.Empty;
-
-            try
-            {
-                retnData = await responseMessage.Content.ReadAsStringAsync();
-            }
-            catch (Exception e)
-            {
-                throw; // Bubble up
-            }
+            var retnData = await responseMessage.Content.ReadAsStringAsync();
 
             return retnData;
         }
 
 
-        /// <summary>
-        /// Sets Google's auth header
-        /// </summary>
-        private void SetAuthHeader()
-        {
-            if (!this.AuthorizationToken.Equals(String.Empty))
-                client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(String.Format("GoogleLogin auth={0}", this.AuthorizationToken));
-        }
-
-        private bool CheckForUpdatedAuth(HttpResponseMessage responseMessage)
-        {
-            foreach (var header in responseMessage.Headers)
-            {
-                if (header.Key.Equals("Update-Client-Auth"))
-                {
-                    foreach (var v in header.Value)
-                    {
-                        this.AuthorizationToken = v;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
 
         private void CheckForRejection(HttpResponseMessage responseMessage)
         {
@@ -209,30 +132,30 @@ namespace GoogleMusicWebClientAPI
         }
 
 
-        /// <summary>
-        /// Append xt cookie value to each request
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
-        private Uri BuildGoogleRequest(Uri uri)
-        {
-            return uri;
+        ///// <summary>
+        ///// Append xt cookie value to each request
+        ///// </summary>
+        ///// <param name="uri"></param>
+        ///// <returns></returns>
+        //private Uri BuildGoogleRequest(Uri uri)
+        //{
+        //    return uri;
 
-            String xt = this.CookieManager.GetXtCookie();
-            if (xt.Equals(String.Empty))
-                return uri;
+        //    String xt = this.CookieManager.GetXtCookie();
+        //    if (xt.Equals(String.Empty))
+        //        return uri;
 
-            if (uri.ToString().Contains("songid"))
-                return uri;
+        //    if (uri.ToString().Contains("songid"))
+        //        return uri;
 
-            if (uri.ToString().StartsWith("https://play.google.com/music/listen"))
-                return uri;
+        //    if (uri.ToString().StartsWith("https://play.google.com/music/listen"))
+        //        return uri;
 
-            if (uri.ToString().StartsWith("https://www.google.com/accounts/Logout"))
-                return uri;
+        //    if (uri.ToString().StartsWith("https://www.google.com/accounts/Logout"))
+        //        return uri;
 
-            return new Uri(uri.OriginalString + String.Format("?u=0&xt={0}", xt));
-        }
+        //    return new Uri(uri.OriginalString + String.Format("?u=0&xt={0}", xt));
+        //}
 
 
     }

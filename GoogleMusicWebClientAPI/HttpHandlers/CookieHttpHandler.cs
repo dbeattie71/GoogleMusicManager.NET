@@ -1,17 +1,31 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GoogleMusicWebClientAPI
+namespace GoogleMusicWebClientAPI.HttpHandlers
 {
-    public class GoogleCookieManager : IGoogleCookieManager
+    class CookieHttpHandler : DelegatingHandler, IGoogleCookieManager
     {
+        public CookieHttpHandler()
+        {
+            cookieContainer = new CookieContainer();
+        }
+
+        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+            request.Headers.Add("Cookie", this.GetCookies());
+
+            var response = await base.SendAsync(request, cancellationToken);
+
+            this.HandleResponse(response);
+
+            return response;
+        }
+
         public static String URI = "https://play.google.com/music/";
         private CookieContainer cookieContainer;
 
@@ -21,11 +35,6 @@ namespace GoogleMusicWebClientAPI
             {
                 return GetCookiesList();
             }
-        }
-
-        public GoogleCookieManager()
-        {
-            cookieContainer = new CookieContainer();
         }
 
         public bool HandleResponse(HttpResponseMessage msg)
@@ -47,7 +56,7 @@ namespace GoogleMusicWebClientAPI
         public void SetCookiesFromList(List<Cookie> cookies)
         {
             if (cookies == null) return;
-    
+
             foreach (Cookie c in cookies)
                 cookieContainer.Add(new Uri(URI), c);
         }
@@ -78,5 +87,6 @@ namespace GoogleMusicWebClientAPI
 
             return xt;
         }
+
     }
 }
