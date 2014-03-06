@@ -62,6 +62,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models.cs" />
+    <Compile Include="Models\GoogleMusicSongUrl.cs" />
     <Compile Include="StreamingLoadAllTracks\StreamingLoadAllTracksResponseProcessor.cs" />
   </ItemGroup>
   <ItemGroup>

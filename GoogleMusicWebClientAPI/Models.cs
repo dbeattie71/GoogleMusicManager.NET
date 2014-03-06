@@ -11,12 +11,7 @@ using System.Runtime.Serialization;
 
 namespace GoogleMusicWebClientAPI
 {
-    [DataContract]
-    public class GoogleMusicSongUrl
-    {
-        [DataMember(Name = "url")]
-        public String URL { get; set; }
-    };
+
 
     [DataContract]
     public class AddPlaylistResp

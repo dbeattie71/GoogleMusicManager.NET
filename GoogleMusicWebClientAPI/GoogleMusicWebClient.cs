@@ -13,6 +13,7 @@ using System.IO;
 using Byteopia.Helpers;
 using GoogleMusicWebClientAPI.StreamingLoadAllTracks;
 using GoogleMusicWebClientAPI.HttpHandlers;
+using GoogleMusicWebClientAPI.Models;
 
 
 namespace GoogleMusicWebClientAPI
@@ -273,8 +274,8 @@ namespace GoogleMusicWebClientAPI
             });
 
 
-            GoogleMusicSongUrl url = await this.Client.POST<GoogleMusicSongUrl>(new Uri("https://play.google.com/music/services/shareprepurchasepreview"), content);
-            return url.URL;
+            var url = await this.Client.POST<GoogleMusicSongUrl>(new Uri("https://play.google.com/music/services/shareprepurchasepreview"), content);
+            return url.url;
         }
 
         /// <summary>
@@ -313,7 +314,7 @@ namespace GoogleMusicWebClientAPI
 
             }
 
-            return (songUrl != null) ? songUrl.URL : String.Empty;
+            return (songUrl != null) ? songUrl.url : String.Empty;
         }
 
         public async Task<bool> HitForSessionCookies()
@@ -360,7 +361,7 @@ namespace GoogleMusicWebClientAPI
             Session tmp = null;
             try
             {
-                tmp = JSON.DeserializeObject<Session>(Settings.GetSerializedStringValue("session", true));
+                tmp = JSON.Deserialize<Session>(Settings.GetSerializedStringValue("session", true));
 
                 this.authorizationTokenHandler.AuthorizationToken = tmp.AuthToken;
                 this.cookieManager.SetCookiesFromList(tmp.Cookies);
