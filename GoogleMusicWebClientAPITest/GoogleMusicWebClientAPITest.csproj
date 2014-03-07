@@ -52,8 +52,12 @@
   <ItemGroup>
     <Compile Include="StreamingLoadAllTracksResponseProcessorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RecommendedForYouResponseProcessorTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="recommendedforyou.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="StreamingLoadAllTracks.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

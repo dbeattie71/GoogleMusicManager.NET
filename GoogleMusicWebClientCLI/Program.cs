@@ -1,6 +1,8 @@
 ﻿using GoogleMusicWebClientAPI;
+using GoogleMusicWebClientAPI.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -54,6 +56,13 @@ namespace GoogleMusicWebClientCLI
             //var numberOfTracksTask = api.GetTrackCount();
             //numberOfTracksTask.Wait();
             //this.numberOfTracks = numberOfTracksTask.Result;
+            var recommendedTask = api.GetGoogleRecommendedSongs();
+            recommendedTask.Wait();
+            var recommended = recommendedTask.Result;
+            foreach (var track in recommended)
+            {
+                Console.WriteLine(track.Artist + ", " + track.Album + ", " + track.Track);
+            }
 
             var allSongs = api.GetAllSongs();
             allSongs.Wait();

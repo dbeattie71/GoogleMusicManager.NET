@@ -10,7 +10,7 @@ namespace GoogleMusicWebClientAPITest
     public class StreamingLoadAllTracksResponseProcessorTest
     {
         [TestMethod]
-        public void StreamingLoadAllTracksProcessorTest()
+        public void Test_StreamingLoadAllTracksProcessor()
         {
             var processor = new StreamingLoadAllTracksResponseProcessor();
 

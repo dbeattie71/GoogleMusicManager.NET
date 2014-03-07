@@ -14,6 +14,7 @@ using Byteopia.Helpers;
 using GoogleMusicWebClientAPI.StreamingLoadAllTracks;
 using GoogleMusicWebClientAPI.HttpHandlers;
 using GoogleMusicWebClientAPI.Models;
+using GoogleMusicWebClientAPI.RecommendedForYou;
 
 
 namespace GoogleMusicWebClientAPI
@@ -143,14 +144,17 @@ namespace GoogleMusicWebClientAPI
         /// <summary>
         /// Populates the list of songs based on Google's recommendations
         /// </summary>
-        public async void GetGoogleRecommendedSongs(ObservableCollection<GoogleMusicSong> googleRecs)
+        public async Task<IEnumerable<GoogleMusicSong>> GetGoogleRecommendedSongs()
         {
-            GoogleRecomendations recs = await this.Client.POST<GoogleRecomendations>(new Uri("https://play.google.com/music/services/recommendedforyou"), null);
+            var url = "https://play.google.com/music/services/recommendedforyou?u=0&xt={0}&format=jsarray";
+            url = url.Replace("{0}", this.cookieManager.GetXtCookie());
+            var content = new StringContent(@"[[""f4n3098h48h4"",1],[]]");
+            var recsString = await this.Client.POST(new Uri(url), content);
 
-            foreach (GoogleMusicSong r in recs.RecommendedSongs)
-            {
-                googleRecs.Add(r);
-            }
+            var responseProcessor = new RecommendedForYouResponseProcessor();
+            var recs = responseProcessor.RecommendedForYouResponse(recsString);
+
+            return recs;
         }
 
         /// <summary>

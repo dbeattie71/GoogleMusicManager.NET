@@ -1,4 +1,5 @@
 ﻿using GoogleMusicWebClientAPI;
+using GoogleMusicWebClientAPI.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,7 +17,7 @@ namespace GoogleMusicWebClientAPI
         Task<bool> GetUserPlaylists();
         
         Task<IEnumerable<GoogleMusicSong>> GetAllSongs();
-        void GetGoogleRecommendedSongs(ObservableCollection<GoogleMusicSong> googleRecs);
+        Task<IEnumerable<GoogleMusicSong>> GetGoogleRecommendedSongs();
         Task<string> GetShareableURL(GoogleMusicSong song);
         void GetSharedWithMe(ObservableCollection<GoogleMusicSong> sharedSongs);
         Task<string> GetStreamURL(GoogleMusicSong song);
