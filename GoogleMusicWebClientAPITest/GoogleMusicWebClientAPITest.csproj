@@ -54,6 +54,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="GetStreamUrlTest.cs" />
     <Compile Include="GoogleMusicWebClientInstance.cs" />
     <Compile Include="SessionStorage.cs" />
     <Compile Include="StreamingLoadAllTracksResponseProcessorTest.cs" />
