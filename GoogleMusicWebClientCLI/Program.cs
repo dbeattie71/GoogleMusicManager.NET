@@ -18,15 +18,15 @@ namespace GoogleMusicWebClientCLI
         static void Main(string[] args)
         {
             var program = new Program();
-            //program.SearchSongs();
-            program.GetAllSongs();
-
+            var api = GetAuthenticatedAPI();
+            program.GetAllSongs(api);
+            program.GetRecommended(api);
             //program.GetTrackCounts();
 
         }
-        private static API GetAuthenticatedAPI()
+        private static IGoogleMusicWebClient GetAuthenticatedAPI()
         {
-            var api = new API(new SessionStorage());
+            var api = new GoogleMusicWebClient(new SessionStorage());
 
             Console.Write("User: ");
             var username = Console.ReadLine();
@@ -39,23 +39,55 @@ namespace GoogleMusicWebClientCLI
             return api;
         }
 
-        private void SearchSongs()
+        private void SearchSongs(IGoogleMusicWebClient api)
         {
-            var api = GetAuthenticatedAPI();
-
             var searchTask = api.Search("candlemass");
             searchTask.Wait();
             var results = searchTask.Result;
 
         }
 
-        private void GetAllSongs()
+        private void GetAllSongs(IGoogleMusicWebClient api)
         {
-            var api = GetAuthenticatedAPI();
-
             //var numberOfTracksTask = api.GetTrackCount();
             //numberOfTracksTask.Wait();
             //this.numberOfTracks = numberOfTracksTask.Result;
+
+
+            var allSongs = api.GetAllSongs();
+            allSongs.Wait();
+            var songList = allSongs.Result.ToList();
+
+            SaveSongsToFile(songList);
+
+            var firstSong = songList.Where(p => p.Type == 6).First();
+
+            var url = GetStreamUrl(api, firstSong);
+
+            var exe = @"C:\Program Files (x86)\Windows Media Player\wmplayer.exe";
+            Process.Start(exe, url);
+
+        }
+
+        private static void SaveSongsToFile(List<GoogleMusicSong> songList)
+        {
+            var matched = songList.Where(p => p.Type == 6);
+            var unmatched = songList.Where(p => p.Type != 6);
+
+            WriteToFile(matched, "matched.txt");
+            WriteToFile(unmatched, "unmatched.txt");
+        }
+
+        private string GetStreamUrl(IGoogleMusicWebClient api, GoogleMusicSong firstSong)
+        {
+            var urlTask = api.GetStreamURL(firstSong);
+            urlTask.Wait();
+            var url = urlTask.Result;
+            return url;
+        }
+
+        private void GetRecommended(IGoogleMusicWebClient api)
+        {
             var recommendedTask = api.GetGoogleRecommendedSongs();
             recommendedTask.Wait();
             var recommended = recommendedTask.Result;
@@ -63,44 +95,6 @@ namespace GoogleMusicWebClientCLI
             {
                 Console.WriteLine(track.Artist + ", " + track.Album + ", " + track.Track);
             }
-
-            var allSongs = api.GetAllSongs();
-            allSongs.Wait();
-            var songList = allSongs.Result.ToList();
-
-            var matched = songList.Where(p => p.Type == 6);
-            var unmatched = songList.Where(p => p.Type != 6);
-
-            WriteToFile(matched, "matched.txt");
-            WriteToFile(unmatched, "unmatched.txt");
-
-            var firstSong = songList.Where(p => p.Type == 6).First();
-
-            var urlTask = api.GetStreamURL(firstSong);
-            urlTask.Wait();
-            var url = urlTask.Result;
-
-            var exe = @"C:\Program Files (x86)\Windows Media Player\wmplayer.exe";
-            Process.Start(exe, url);
-
-
-            //foreach (var song in SongList)
-            //{
-            //    var songUrlTask = api.GetStreamURL(song);
-            //    songUrlTask.Wait();
-
-            //    var url = songUrlTask.Result;
-
-            //    var filename = song.Artist + " " + song.Year + " " + song.Album + " " + song.Track + " " + song.Title + ".mp3";
-
-            //    if (File.Exists(filename))
-            //    {
-            //        File.Delete(filename);
-            //    }
-
-            //    new WebClient().DownloadFile(url, filename);
-            //}
-
         }
 
         private void GetTrackCounts()

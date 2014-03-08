@@ -24,7 +24,7 @@ namespace GoogleMusicWebClientAPI
     /// </summary>
     /// 
     [DataContract]
-    public class API : IGoogleMusicWebClient
+    public class GoogleMusicWebClient : IGoogleMusicWebClient
     {
         private ISessionStorage Settings { get; set; }
 
@@ -34,7 +34,7 @@ namespace GoogleMusicWebClientAPI
 
         private AuthorizationTokenHttpHandler authorizationTokenHandler { get; set; }
 
-        public API(ISessionStorage settings)
+        public GoogleMusicWebClient(ISessionStorage settings)
         {
             this.Settings = settings;
             var cookieHandler = new CookieHttpHandler();
@@ -266,20 +266,12 @@ namespace GoogleMusicWebClientAPI
         /// <returns></returns>
         public async Task<String> GetShareableURL(GoogleMusicSong song)
         {
-            // Not all songs can be shared, licensing prolly
             if (song.StoreID == null)
                 return null;
 
-            String jsonString = "{\"trackId\":\"" + song.StoreID + "\"}";
-
-            HttpContent content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("json", jsonString),
-            });
-
-
-            var url = await this.Client.POST<GoogleMusicSongUrl>(new Uri("https://play.google.com/music/services/shareprepurchasepreview"), content);
-            return url.url;
+            var url = "https://play.google.com/music/m/{0}";
+            url = url.Replace("{0}", song.StoreID);
+            return url;
         }
 
         /// <summary>
