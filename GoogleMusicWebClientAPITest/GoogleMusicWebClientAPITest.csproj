@@ -60,6 +60,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RecommendedForYouResponseProcessorTest.cs" />
     <Compile Include="StreamingLoadAllTracksTest.cs" />
+    <Compile Include="RecommendedForYouTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="recommendedforyou.html">

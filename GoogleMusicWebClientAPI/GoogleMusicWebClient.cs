@@ -144,7 +144,7 @@ namespace GoogleMusicWebClientAPI
         /// <summary>
         /// Populates the list of songs based on Google's recommendations
         /// </summary>
-        public async Task<IEnumerable<GoogleMusicSong>> GetGoogleRecommendedSongs()
+        public async Task<IEnumerable<GoogleMusicSong>> GetRecommendedForYou()
         {
             var url = "https://play.google.com/music/services/recommendedforyou?u=0&xt={0}&format=jsarray";
             url = url.Replace("{0}", this.cookieManager.GetXtCookie());

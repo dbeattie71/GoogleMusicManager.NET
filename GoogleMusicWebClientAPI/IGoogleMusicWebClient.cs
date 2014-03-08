@@ -17,7 +17,7 @@ namespace GoogleMusicWebClientAPI
         Task<bool> GetUserPlaylists();
         
         Task<IEnumerable<GoogleMusicSong>> GetAllSongs();
-        Task<IEnumerable<GoogleMusicSong>> GetGoogleRecommendedSongs();
+        Task<IEnumerable<GoogleMusicSong>> GetRecommendedForYou();
         Task<string> GetStreamURL(GoogleMusicSong song);
         Task<string> GetShareableURL(GoogleMusicSong song);
         void GetSharedWithMe(ObservableCollection<GoogleMusicSong> sharedSongs);

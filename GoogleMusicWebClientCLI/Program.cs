@@ -88,7 +88,7 @@ namespace GoogleMusicWebClientCLI
 
         private void GetRecommended(IGoogleMusicWebClient api)
         {
-            var recommendedTask = api.GetGoogleRecommendedSongs();
+            var recommendedTask = api.GetRecommendedForYou();
             recommendedTask.Wait();
             var recommended = recommendedTask.Result;
             foreach (var track in recommended)
