@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.IO;
+using System.Linq;
 
 using Byteopia.Helpers;
 using GoogleMusicWebClientAPI.StreamingLoadAllTracks;
@@ -193,16 +194,22 @@ namespace GoogleMusicWebClientAPI
         /// <returns></returns>
         public async Task<GoogleMusicSearchResults> Search(String query)
         {
-            String jsonString = "{\"q\":\"" + query + "\"}";
+            var url = "https://play.google.com/music/services/search?u=0&xt={0}&format=jsarray";
+            url = url.Replace("{0}", this.cookieManager.GetXtCookie());
+            var contentString = @"[[""f4n3098h48h4"",1],[""" + query + @""",10]]";
 
-            HttpContent content = new FormUrlEncodedContent(new[]
+            var content = new StringContent(contentString);
+
+            var searchResults = await this.Client.POST(new Uri(url), content);
+
+            var responseProcssor = new RecommendedForYouResponseProcessor();
+            var tracks = responseProcssor.RecommendedForYouResponse(searchResults);
+
+
+            return new GoogleMusicSearchResults()
             {
-                new KeyValuePair<string, string>("json", jsonString),
-            });
-
-            GoogleMusicSearch search = await this.Client.POST<GoogleMusicSearch>(new Uri("https://play.google.com/music/services/search"), content);
-
-            return search.Results;
+                 Songs = tracks.ToList(),
+            };
         }
         ///// <summary>
         ///// Launches the store results page with a given query
