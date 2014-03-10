@@ -158,6 +158,23 @@ namespace GoogleMusicWebClientAPI
             return recs;
         }
 
+        public async Task<IEnumerable<GoogleMusicSong>> FetchTracks(IEnumerable<GoogleMusicSong> tracks)
+        {
+            var url = "https://play.google.com/music/services/fetchtracks?u=0&xt={0}&format=jsarray";
+            url = url.Replace("{0}", this.cookieManager.GetXtCookie());
+
+            var trackIds = string.Join(@""",""", tracks.Select(p => p.MatchedID));
+            var content = @"[[""f4n3098h48h4"",1],[[""" + trackIds + @"""]]]";
+            var stringcontent = new StringContent(content);
+            var recsString = await this.Client.POST(new Uri(url), stringcontent);
+
+            var responseProcessor = new RecommendedForYouResponseProcessor();
+            var recs = responseProcessor.RecommendedForYouResponse(recsString);
+
+            return recs;
+        }
+
+
         /// <summary>
         /// Gets songs shared with user via G+
         /// </summary>
@@ -379,5 +396,8 @@ namespace GoogleMusicWebClientAPI
 
             return true;
         }
+
+
+
     }
 }
