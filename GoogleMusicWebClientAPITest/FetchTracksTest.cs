@@ -32,6 +32,14 @@ namespace GoogleMusicWebClientAPITest
 
             Assert.AreEqual(tracksToFetch.Count(), fetchedTracks.Count());
 
+            foreach (var fetchedTrack in fetchedTracks)
+            {
+                var originalTrack = tracksToFetch.First(p => p.MatchedID == fetchedTrack.MatchedID);
+                var diff = originalTrack.CompareTo(fetchedTrack);
+
+            }
+
+
         }
     }
 }

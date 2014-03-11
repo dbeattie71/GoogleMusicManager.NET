@@ -63,6 +63,7 @@
     </Compile>
     <Compile Include="Models.cs" />
     <Compile Include="Models\GoogleMusicSong.cs" />
+    <Compile Include="Models\GoogleMusicSongDiff.cs" />
     <Compile Include="Models\GoogleMusicSongUrl.cs" />
     <Compile Include="RecommendedForYou\RecommendedForYouResponseProcessor.cs" />
     <Compile Include="StreamingLoadAllTracks\StreamingLoadAllTracksResponseProcessor.cs" />

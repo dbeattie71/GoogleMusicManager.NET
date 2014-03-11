@@ -9,179 +9,44 @@ namespace GoogleMusicWebClientAPI.Models
 {
     public class GoogleMusicSong
     {
-        string albumart;
-        string albumArtist;
-        string album;
-
-        [DataMember(Name = "genre")]
-        public string Genre { get; set; }
-
-        [DataMember(Name = "beatsPerMinute")]
-        public int BPM { get; set; }
-
-        [DataMember(Name = "albumArtistNorm")]
-        public string AlbumArtistNorm { get; set; }
-
-        [DataMember(Name = "artistNorm")]
-        public string ArtistNorm { get; set; }
-
-        [DataMember(Name = "album")]
-        public string Album
-        {
-            get { return album; }
-            set
-            {
-                album = value;
-            }
-        }
-
-        [DataMember(Name = "lastPlayed")]
-        public double LastPlayed { get; set; }
-
-        [DataMember(Name = "type")]
-        public int Type { get; set; }
-
-        [DataMember(Name = "disc")]
-        public int Disc { get; set; }
-
-        [DataMember(Name = "id")]
         public string ID { get; set; }
-
-        [DataMember(Name = "composer")]
-        public string Composer { get; set; }
-
-        [DataMember(Name = "title")]
         public string Title { get; set; }
-
-        [DataMember(Name = "albumArtist")]
-        public string AlbumArtist
-        {
-            get { return albumArtist; }
-            set
-            {
-                albumArtist = value;
-            }
-        }
-
-        [DataMember(Name = "totalTracks")]
-        public int TotalTracks { get; set; }
-
-        public String AlbumDetailString
-        {
-            get
-            {
-                if (TotalTracks != 0 && !Genre.Equals(String.Empty))
-                {
-                    return String.Format("{0}, {1} tracks", Genre, TotalTracks);
-                }
-                else
-                {
-                    String r = "";
-                    if (Genre != "")
-                        r += Genre;
-                    if (TotalTracks != 0 && Genre != "")
-                        r += ", " + TotalTracks + " tracks";
-                    if (TotalTracks != 0 && Genre == "")
-                        return TotalTracks + " tracks";
-                    return r;
-                }
-            }
-        }
-        [DataMember(Name = "name")]
-        public string Name { get; set; }
-
-        [DataMember(Name = "totalDiscs")]
-        public int TotalDiscs { get; set; }
-
-        [DataMember(Name = "year")]
-        public int Year { get; set; }
-
-        [DataMember(Name = "titleNorm")]
-        public string TitleNorm { get; set; }
-
-        [DataMember(Name = "artist")]
-        public string Artist { get; set; }
-
-        [DataMember(Name = "albumNorm")]
-        public string AlbumNorm { get; set; }
-
-        [DataMember(Name = "track")]
-        public int Track { get; set; }
-
-        [DataMember(Name = "durationMillis")]
-        public long Duration { get; set; }
-
-        public String DurationTimeSpan { get { return TimeSpan.FromMilliseconds(this.Duration).ToString("g"); } set { } }
-
-        [DataMember(Name = "albumArt")]
         public string AlbumArt { get; set; }
-
-        [DataMember(Name = "deleted")]
-        public bool Deleted { get; set; }
-
-        [DataMember(Name = "url")]
-        public string URL { get; set; }
-
-        [DataMember(Name = "creationDate")]
-        public float CreationDate { get; set; }
-
-        [DataMember(Name = "playCount")]
+        public string Artist { get; set; }
+        public string Album { get; set; }
+        public string AlbumArtist { get; set; }
+        public string Composer { get; set; }
+        public string Genre { get; set; }
+        public long Duration { get; set; }
+        public int Track { get; set; }
+        public int TotalTracks { get; set; }
+        public int Disc { get; set; }
+        public int TotalDiscs { get; set; }
+        public int Year { get; set; }
         public int Playcount { get; set; }
-
-        [DataMember(Name = "rating")]
-        public int Rating { get; set; }
-
-        [DataMember(Name = "comment")]
+        public float CreationDate { get; set; }
+        public double LastPlayed { get; set; }
+        public string StoreID { get; set; }
+        public string MatchedID { get; set; }
+        public int Type { get; set; }
         public string Comment { get; set; }
 
-        [DataMember(Name = "matchedId")]
-        public string MatchedID
-        {
-            get;
-            set;
-        }
-        [DataMember(Name = "storeId")]
-        public string StoreID
-        {
-            get;
-            set;
-        }
 
-        [DataMember(Name = "albumArtUrl")]
-        public string ArtURL
-        {
-            get
-            {
-                return (albumart != null && !albumart.StartsWith("http:")) ? "http:" + albumart : albumart;
-            }
-            set
-            {
-                albumart = value;
 
-            }
-        }
+        public string ArtURL { get; set; }
 
-        [DataMember(Name = "previewInfo")]
+        public int BPM { get; set; }
+        public string AlbumArtistNorm { get; set; }
+        public string ArtistNorm { get; set; }
+        public string Name { get; set; }
+        public string TitleNorm { get; set; }
+        public string AlbumNorm { get; set; }
+        public bool Deleted { get; set; }
+        public string URL { get; set; }
+        public int Rating { get; set; }
+
         public PreviewInfo Preview { get; set; }
-
-        [DataMember(Name = "sharingInfo")]
         public ShareInfo Share;
-
-        public string ArtistAlbum
-        {
-            get
-            {
-                return Artist + ", " + Album;
-            }
-        }
-
-        public TimeSpan DurationClean
-        {
-            get
-            {
-                return TimeSpan.FromMilliseconds(Duration);
-            }
-        }
 
         public static GoogleMusicSong BuildFromDynamic(dynamic track)
         {
@@ -220,6 +85,46 @@ namespace GoogleMusicWebClientAPI.Models
             return gms;
         }
 
+        public GoogleMusicSongDiff CompareTo(GoogleMusicSong update)
+        {
+            var diff = new GoogleMusicSongDiff()
+            {
+                ID = this.ID,
+                Title = GetComparison(this.Title, update.Title),
+                AlbumArt = GetComparison(this.AlbumArt, update.AlbumArt),
+                Artist = GetComparison(this.Artist, update.Artist),
+                Album = GetComparison(this.Album, update.Album),
+                AlbumArtist = GetComparison(this.AlbumArtist, update.AlbumArtist),
+                Composer = GetComparison(this.Composer, update.Composer),
+                Genre = GetComparison(this.Genre, update.Genre),
+                Duration = GetComparison(this.Duration, update.Duration),
+                Track = GetComparison(this.Track, update.Track),
+                TotalTracks = GetComparison(this.TotalTracks, update.TotalTracks),
+                Disc = GetComparison(this.Disc, update.Disc),
+                TotalDiscs = GetComparison(this.TotalDiscs, update.TotalDiscs),
+                Year = GetComparison(this.Year, update.Year),
+                Playcount = GetComparison(this.Playcount, update.Playcount),
+                //CreationDate = GetComparison(this.CreationDate, update.CreationDate),
+                //LastPlayed = GetComparison(this.LastPlayed, update.LastPlayed),
+                StoreID = GetComparison(this.StoreID, update.StoreID),
+                MatchedID = GetComparison(this.MatchedID, update.MatchedID),
+                //Type = GetComparison(this.Type, update.Type),
+                Comment = GetComparison(this.Comment, update.Comment),
 
+                ArtURL = GetComparison(this.ArtURL, update.ArtURL),
+            };
+            return diff;
+        }
+
+        private T? GetComparison<T>(T from, T to) where T : struct, IComparable
+        {
+            if (from.CompareTo(to) == 0) return null;
+            return to;
+        }
+        private string GetComparison(string from, string to) 
+        {
+            if (from == to) return null;
+            return to;
+        }
     }
 }
