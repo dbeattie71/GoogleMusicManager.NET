@@ -57,6 +57,7 @@
     <Compile Include="FetchTracksTest.cs" />
     <Compile Include="GetStreamUrlTest.cs" />
     <Compile Include="GoogleMusicWebClientInstance.cs" />
+    <Compile Include="ModifyTrackTest.cs" />
     <Compile Include="SessionStorage.cs" />
     <Compile Include="StreamingLoadAllTracksResponseProcessorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -23,6 +23,7 @@ namespace GoogleMusicWebClientAPI.Models
         public int? TotalDiscs { get; set; }
         public int? Year { get; set; }
         public int? Playcount { get; set; }
+        public int? Rating { get; set; }
         public float? CreationDate { get; set; }
         public double? LastPlayed { get; set; }
         public string StoreID { get; set; }
@@ -33,5 +34,57 @@ namespace GoogleMusicWebClientAPI.Models
 
 
         public string ArtURL { get; set; }
+
+        public object[] GetDiffArray()
+        {
+            var diffArray = new List<object>() {
+                this.ID,
+                this.Title,
+                this.AlbumArt,
+                this.Artist,
+                this.Album,
+                this.AlbumArtist,
+                null,
+                null,
+                null,
+                null,
+                this.Composer, //10
+                this.Genre,
+                null,
+                this.Duration,
+                this.Track,
+                this.TotalTracks,
+                this.Disc,
+                this.TotalDiscs,
+                this.Year,
+                null,
+                null, //20
+                null,
+                this.Playcount,
+                null,
+                this.CreationDate,
+                this.LastPlayed,
+                null,
+                this.StoreID,
+                this.MatchedID,
+                this.Type,
+                this.Comment, //30
+                null,
+                null,
+                null,
+                null,
+                null,
+                this.ArtURL,
+                null,
+                null,
+                null,
+                null, //40
+                null,
+                true,
+            };
+
+            return diffArray.ToArray();
+        }
+
     }
 }

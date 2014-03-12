@@ -24,6 +24,7 @@ namespace GoogleMusicWebClientAPI.Models
         public int TotalDiscs { get; set; }
         public int Year { get; set; }
         public int Playcount { get; set; }
+        public int Rating { get; set; }
         public float CreationDate { get; set; }
         public double LastPlayed { get; set; }
         public string StoreID { get; set; }
@@ -43,7 +44,7 @@ namespace GoogleMusicWebClientAPI.Models
         public string AlbumNorm { get; set; }
         public bool Deleted { get; set; }
         public string URL { get; set; }
-        public int Rating { get; set; }
+
 
         public PreviewInfo Preview { get; set; }
         public ShareInfo Share;
@@ -67,6 +68,7 @@ namespace GoogleMusicWebClientAPI.Models
                 TotalDiscs = track[17] == null ? 0 : track[17],
                 Year = track[18] == null ? 0 : track[18],
                 Playcount = track[22] == null ? 0 : track[22],
+                Rating = track[23] == null ? 0 : track[23],
                 CreationDate = (float)track[24],
                 LastPlayed = track[25] == null ? 0 : (double)track[25],
                 StoreID = track[27],
@@ -104,6 +106,7 @@ namespace GoogleMusicWebClientAPI.Models
                 TotalDiscs = GetComparison(this.TotalDiscs, update.TotalDiscs),
                 Year = GetComparison(this.Year, update.Year),
                 Playcount = GetComparison(this.Playcount, update.Playcount),
+                Rating = GetComparison(this.Rating, update.Rating),
                 //CreationDate = GetComparison(this.CreationDate, update.CreationDate),
                 //LastPlayed = GetComparison(this.LastPlayed, update.LastPlayed),
                 StoreID = GetComparison(this.StoreID, update.StoreID),

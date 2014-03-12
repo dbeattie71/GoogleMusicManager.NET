@@ -16,6 +16,7 @@ using GoogleMusicWebClientAPI.StreamingLoadAllTracks;
 using GoogleMusicWebClientAPI.HttpHandlers;
 using GoogleMusicWebClientAPI.Models;
 using GoogleMusicWebClientAPI.RecommendedForYou;
+using Newtonsoft.Json;
 
 
 namespace GoogleMusicWebClientAPI
@@ -174,6 +175,20 @@ namespace GoogleMusicWebClientAPI
             return recs;
         }
 
+        public async Task<bool> ModifyTrack(GoogleMusicSongDiff track)
+        {
+            var url = "https://play.google.com/music/services/modifytracks?u=0&xt={0}&format=jsarray";
+            url = url.Replace("{0}", this.cookieManager.GetXtCookie());
+
+            var diffFields = track.GetDiffArray();
+            var diffString = JsonConvert.SerializeObject(diffFields);
+
+            var content = @"[[""f4n3098h48h4"",1],[[" + diffString + @"]]]";
+            var stringcontent = new StringContent(content);
+            var recsString = await this.Client.POST(new Uri(url), stringcontent);
+
+            return true;
+        }
 
         /// <summary>
         /// Gets songs shared with user via G+
@@ -396,7 +411,6 @@ namespace GoogleMusicWebClientAPI
 
             return true;
         }
-
 
 
     }

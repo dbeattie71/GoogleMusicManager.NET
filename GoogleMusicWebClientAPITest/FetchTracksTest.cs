@@ -36,10 +36,7 @@ namespace GoogleMusicWebClientAPITest
             {
                 var originalTrack = tracksToFetch.First(p => p.MatchedID == fetchedTrack.MatchedID);
                 var diff = originalTrack.CompareTo(fetchedTrack);
-
             }
-
-
         }
     }
 }
