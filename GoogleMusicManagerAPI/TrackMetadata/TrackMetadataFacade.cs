@@ -36,7 +36,13 @@ namespace GoogleMusicManagerAPI.TrackMetadata
                 FileName = filename,
             };
 
+            if (track.Title != null) track.Title = track.Title.Trim();
+            if (track.Album != null) track.Album = track.Album.Trim();
+            if (track.Artist != null) track.Artist = track.Artist.Trim();
+            if (string.IsNullOrWhiteSpace(track.AlbumArtist)) track.AlbumArtist = track.Artist;
             return track;
+
+
 
         }
     }
