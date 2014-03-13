@@ -118,8 +118,6 @@ namespace GoogleMusicWebClientAPI
             return results;
         }
 
-
-
         /// <summary>
         /// Gets complete list of all playlists
         /// </summary>
@@ -240,7 +238,7 @@ namespace GoogleMusicWebClientAPI
 
             return new GoogleMusicSearchResults()
             {
-                 Songs = tracks.ToList(),
+                Songs = tracks.ToList(),
             };
         }
         ///// <summary>
@@ -253,31 +251,17 @@ namespace GoogleMusicWebClientAPI
         //}
 
         /// <summary>
-        /// Modify a songs meta data
-        /// </summary>
-        /// <param name="song">Song to be changed</param>
-        /// <param name="metaKey">Key to change, ie: rating</param>
-        /// <param name="metaValue">Value of key</param>
-        /// <returns></returns>
-        public async Task<String> ModifySong(GoogleMusicSong song, String metaKey, object metaValue)
-        {
-            // puke
-            String jsonString = "{\"entries\":[{\"id\" : \"" + song.ID + "\", \"" + metaKey + "\":" + "\"" + metaValue + "\"}]}";
-            HttpContent content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("json", jsonString),
-            });
-
-            return await this.Client.POST(new Uri("https://play.google.com/music/services/modifyentries"), content);
-        }
-
-        /// <summary>
         /// Thumbs up a song
         /// </summary>
         /// <param name="song">Song to like</param>
         public async void LikeSong(GoogleMusicSong song)
         {
-            await ModifySong(song, "rating", 5);
+            var diff = new GoogleMusicSongDiff()
+            {
+                ID = song.ID,
+                Rating = 5,
+            };
+            await this.ModifyTrack(diff);
         }
 
         /// <summary>
@@ -286,7 +270,12 @@ namespace GoogleMusicWebClientAPI
         /// <param name="song">Song to hate</param>
         public async void DislikeSong(GoogleMusicSong song)
         {
-            await ModifySong(song, "rating", 0);
+            var diff = new GoogleMusicSongDiff()
+            {
+                ID = song.ID,
+                Rating = 0,
+            };
+            await this.ModifyTrack(diff);
         }
 
         /// <summary>
@@ -295,7 +284,7 @@ namespace GoogleMusicWebClientAPI
         /// <param name="song">Song to inc playcount</param>
         public async void IncrementPlaycount(GoogleMusicSong song)
         {
-            await ModifySong(song, "playCount", song.Playcount + 1);
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -407,7 +396,6 @@ namespace GoogleMusicWebClientAPI
                 //throw;
                 return false;
             }
-
 
             return true;
         }

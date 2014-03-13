@@ -29,6 +29,5 @@ namespace GoogleMusicWebClientAPI
         void IncrementPlaycount(GoogleMusicSong song);
         void DislikeSong(GoogleMusicSong song);
         void LikeSong(GoogleMusicSong song);
-        Task<string> ModifySong(GoogleMusicSong song, string metaKey, object metaValue);
     }
 }
