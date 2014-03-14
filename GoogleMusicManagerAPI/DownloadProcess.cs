@@ -133,7 +133,7 @@ namespace GoogleMusicManagerAPI
 
         private static string GetOutputDirectory(DownloadTrackInfo track)
         {
-            var firstDirectoryLevel = track.artist;
+            var firstDirectoryLevel = string.IsNullOrEmpty(track.album_artist) ? track.artist : track.album_artist;
             Path.GetInvalidPathChars().ToList().ForEach(p => firstDirectoryLevel = firstDirectoryLevel.Replace(p.ToString(), ""));
             var secondDirectoryLevel = track.album;
             Path.GetInvalidPathChars().ToList().ForEach(p => secondDirectoryLevel = secondDirectoryLevel.Replace(p.ToString(), ""));
