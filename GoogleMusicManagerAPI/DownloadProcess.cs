@@ -63,7 +63,7 @@ namespace GoogleMusicManagerAPI
             var tracksToDownload = trackList.Where(p => string.IsNullOrEmpty(artist) || p.artist.ToLower().Contains(artist.ToLower()))
                 .Where(p => string.IsNullOrEmpty(album) || p.album.ToLower().Contains(album.ToLower()))
                 .Where(p => string.IsNullOrEmpty(title) || p.title.ToLower().Contains(title.ToLower()))
-                .OrderBy(p => p.artist)
+                .OrderBy(p => string.IsNullOrEmpty(p.album_artist) ? p.artist : p.album_artist)
                 .ThenBy(p => p.album)
                 .ThenBy(p => p.track_number)
                 .ThenBy(p => p.title)

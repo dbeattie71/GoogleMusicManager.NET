@@ -26,21 +26,21 @@ namespace GoogleMusicDownloaderCLI
                 "{0, -4}", track.TrackNumber.ToString()
                 );
 
-            if (track.Title.Length > 35)
+            if (track.Title.Length > 45)
             {
-                result += track.Title.Substring(0, 35);
+                result += track.Title.Substring(0, 45);
             }
             else
             {
-                result += track.Title.PadRight(35);
+                result += track.Title.PadRight(45);
             }
 
-            var length = track.Duration;
-            result += length.ToString(@"mm\:ss");
-            result += " ";
+            //var length = track.Duration;
+            //result += length.ToString(@"mm\:ss");
+            //result += " ";
 
-            result += string.Format("{0, -4}", track.AudioBitrate);
-            result += " ";
+            //result += string.Format("{0, -4}", track.AudioBitrate);
+            //result += " ";
 
             result += this.operation;
             if (enableProgress)
@@ -78,12 +78,14 @@ namespace GoogleMusicDownloaderCLI
 
         public void BeginDownloadTrack(ITrackMetadata trackMetadata)
         {
-            if (this.lastArtist != trackMetadata.Artist)
+            var preferredArtistName = string.IsNullOrEmpty(trackMetadata.AlbumArtist) ? trackMetadata.Artist : trackMetadata.AlbumArtist;
+
+            if (this.lastArtist != preferredArtistName)
             {
-                this.lastArtist = trackMetadata.Artist;
+                this.lastArtist = preferredArtistName;
                 Console.Write("Artist: ");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(trackMetadata.Artist);
+                Console.WriteLine(preferredArtistName);
                 Console.ResetColor();
             }
             if (this.lastAlbum != trackMetadata.Album)
