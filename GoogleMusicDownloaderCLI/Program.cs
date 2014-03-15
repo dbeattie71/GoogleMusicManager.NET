@@ -19,7 +19,7 @@ namespace GoogleMusicDownloaderCLI
             {
                 var downloader = new DownloadProcess(
                     new OauthTokenStorage(options.OauthFile),
-                    new DownloadProcessObserver()
+                    GetDownloadProcessObserver()
                     );
 
                 var task = downloader.DoDownload(options.ArtistFilter, options.AlbumFilter, options.TrackFilter);
@@ -29,8 +29,17 @@ namespace GoogleMusicDownloaderCLI
             }
         }
 
-
-
+        public static IDownloadProcessObserver GetDownloadProcessObserver()
+        {
+            if (Console.IsOutputRedirected)
+            {
+                return new RedirectedDownloadProcessObserver();
+            }
+            else
+            {
+                return new DownloadProcessObserver();
+            }
+        }
 
     }
 }
