@@ -26,13 +26,15 @@ namespace GoogleMusicManagerCLI
                 "{0, -4}", track.TrackNumber.ToString()
                 );
 
-            if (track.Title.Length > 35)
+            var title = string.IsNullOrEmpty(track.Title) ? "<untitled>" : track.Title;
+
+            if (title.Length > 35)
             {
-                result += track.Title.Substring(0, 35);
+                result += title.Substring(0, 35);
             }
             else
             {
-                result += track.Title.PadRight(35);
+                result += title.PadRight(35);
             }
 
             var length = track.Duration;
