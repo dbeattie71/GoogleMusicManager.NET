@@ -51,7 +51,7 @@ namespace GoogleMusicManagerAPI
         {
         }
 
-        public async Task<bool> DoDownload(string artist, string album, string title)
+        public async Task<bool> DoDownload(string path, string artist, string album, string title)
         {
             var oauthApi = new Oauth2API(oauth2Storage);
 
@@ -77,6 +77,7 @@ namespace GoogleMusicManagerAPI
 
                 var filename = GetOutputFilename(track);
                 var folderPath = GetOutputDirectory(track);
+                folderPath = Path.Combine(path, folderPath);
                 var fullpath = Path.Combine(folderPath, filename);
 
                 if (ShouldDownload(fullpath, track.track_size))

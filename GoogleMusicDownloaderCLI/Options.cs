@@ -22,7 +22,9 @@ namespace GoogleMusicDownloaderCLI
         [Option('t', "track", Required = false, DefaultValue = null, HelpText = "Track filter.")]
         public string TrackFilter { get; set; }
 
-
+        [Option('p', "path", Required = false, DefaultValue = "", HelpText = "Destination path.")]
+        public string Path { get; set; }
+        
         [ParserState]
         public IParserState LastParserState { get; set; }
 

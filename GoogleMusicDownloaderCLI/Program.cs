@@ -22,7 +22,7 @@ namespace GoogleMusicDownloaderCLI
                     GetDownloadProcessObserver()
                     );
 
-                var task = downloader.DoDownload(options.ArtistFilter, options.AlbumFilter, options.TrackFilter);
+                var task = downloader.DoDownload(options.Path, options.ArtistFilter, options.AlbumFilter, options.TrackFilter);
 
                 task.Wait();
                 var result = task.Result;
