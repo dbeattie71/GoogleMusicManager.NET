@@ -99,14 +99,14 @@ namespace GoogleMusicManagerCLI
             this.SetProgress("Metadata matched...", false);
         }
 
-        public void MetadataMatchRetry(ITrackMetadata track, int matchRetryCount)
+        public void MetadataMatchRetry(ITrackMetadata track, int matchRetryCount, string responseCode)
         {
-            this.SetProgress("Metadata retry " + matchRetryCount, false);
+            this.SetProgress("Metadata retry " + matchRetryCount + " " + this.FormatResponseCode(responseCode), false);
         }
 
-        public void MetadataNoMatch(ITrackMetadata track)
+        public void MetadataNoMatch(ITrackMetadata track, string responseCode)
         {
-            this.SetProgress("Metadata no match", false);
+            this.SetProgress("Metadata no match: " + FormatResponseCode(responseCode), false);
         }
 
         public void BeginUploadSample(ITrackMetadata track)
@@ -116,7 +116,7 @@ namespace GoogleMusicManagerCLI
 
         public void EndUploadSample(ITrackMetadata track, string responseCode)
         {
-            this.SetProgress("Sample result: " + responseCode.ToString().ToLower().Replace("_", " "), false);
+            this.SetProgress("Sample result: " + this.FormatResponseCode(responseCode), false);
         }
 
 
@@ -127,7 +127,7 @@ namespace GoogleMusicManagerCLI
 
         public void EndUploadTrack(ITrackMetadata track, string status, string serverFileReference)
         {
-            this.SetProgress("Upload track result: " + status.ToString().ToLower().Replace("_", " "), false);
+            this.SetProgress("Upload track result: " + this.FormatResponseCode(status), false);
         }
 
         public void EndTrack(ITrackMetadata track)
@@ -159,6 +159,11 @@ namespace GoogleMusicManagerCLI
         public void EndSessionRequest(ITrackMetadata track)
         {
             this.SetProgress("Received session", false);
+        }
+
+        private string FormatResponseCode(string responseCode)
+        {
+            return responseCode.ToLower().Replace("_", " ");
         }
     }
 }

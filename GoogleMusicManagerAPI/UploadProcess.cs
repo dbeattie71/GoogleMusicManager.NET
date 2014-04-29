@@ -86,11 +86,11 @@ namespace GoogleMusicManagerAPI
                     matchRetryCount++;
                     var newClientId = GetRandomClientId(us.TrackMetaData.FileName, matchRetryCount);
                     us.Track.client_id = newClientId;
-                    this.observer.MetadataMatchRetry(us.TrackMetaData, matchRetryCount);
+                    this.observer.MetadataMatchRetry(us.TrackMetaData, matchRetryCount, us.TrackSampleResponse.response_code.ToString());
                 }
                 else
                 {
-                    this.observer.MetadataNoMatch(us.TrackMetaData);
+                    this.observer.MetadataNoMatch(us.TrackMetaData, us.TrackSampleResponse.response_code.ToString());
                     break;
                 }
             }

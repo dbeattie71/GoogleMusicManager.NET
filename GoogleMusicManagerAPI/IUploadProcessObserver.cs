@@ -13,8 +13,8 @@ namespace GoogleMusicManagerAPI
         void BeginTrack(ITrackMetadata track);
         void BeginMetadata(ITrackMetadata track);
         void MetadataMatch(ITrackMetadata track);
-        void MetadataMatchRetry(ITrackMetadata track, int matchRetryCount);
-        void MetadataNoMatch(ITrackMetadata track);
+        void MetadataMatchRetry(ITrackMetadata track, int matchRetryCount, string responseCode);
+        void MetadataNoMatch(ITrackMetadata track, string responseCode);
         void BeginUploadSample(ITrackMetadata track);
         void EndUploadSample(ITrackMetadata track, string responseCode);
         void BeginSessionRequest(ITrackMetadata track);
