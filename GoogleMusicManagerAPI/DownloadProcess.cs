@@ -85,7 +85,15 @@ namespace GoogleMusicManagerAPI
                     var songid = track.id;
                     var info = await api.GetTracksUrl(songid);
                     var bytes = await api.DownloadTrack(info.url);
-                    Directory.CreateDirectory(folderPath);
+                    try
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+                    catch
+                    {
+                        throw new ApplicationException("Unable to create path: " + folderPath);
+                    }
+
                     File.WriteAllBytes(fullpath, bytes);
                     this.observer.EndDownloadTrack(CreateTrackMetadata(track));
                 }
@@ -134,10 +142,14 @@ namespace GoogleMusicManagerAPI
 
         private static string GetOutputDirectory(DownloadTrackInfo track)
         {
+            var invalidPathChars = Path.GetInvalidPathChars().Select(p=> p.ToString()).ToList();
+            invalidPathChars.Add(":");
+            invalidPathChars.Add("?");
+
             var firstDirectoryLevel = string.IsNullOrEmpty(track.album_artist) ? track.artist : track.album_artist;
-            Path.GetInvalidPathChars().ToList().ForEach(p => firstDirectoryLevel = firstDirectoryLevel.Replace(p.ToString(), ""));
+            invalidPathChars.ForEach(p => firstDirectoryLevel = firstDirectoryLevel.Replace(p, ""));
             var secondDirectoryLevel = track.album;
-            Path.GetInvalidPathChars().ToList().ForEach(p => secondDirectoryLevel = secondDirectoryLevel.Replace(p.ToString(), ""));
+            invalidPathChars.ForEach(p => secondDirectoryLevel = secondDirectoryLevel.Replace(p, ""));
             var folderPath = Path.Combine(firstDirectoryLevel, secondDirectoryLevel);
             return folderPath;
         }
