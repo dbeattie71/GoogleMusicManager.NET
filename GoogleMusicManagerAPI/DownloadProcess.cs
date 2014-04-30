@@ -51,6 +51,14 @@ namespace GoogleMusicManagerAPI
         {
         }
 
+        private class TrackPath
+        {
+            public DownloadTrackInfo Track { get; set; }
+            public string Filename { get; set; }
+            public string Directory { get; set; }
+        }
+
+
         public async Task<bool> DoDownload(string path, string artist, string album, string title)
         {
             var oauthApi = new Oauth2API(oauth2Storage);
@@ -60,23 +68,43 @@ namespace GoogleMusicManagerAPI
 
             var trackList = await this.GetTracks();
 
-            var tracksToDownload = trackList.Where(p => string.IsNullOrEmpty(artist) || p.artist.ToLower().Contains(artist.ToLower()))
-                .Where(p => string.IsNullOrEmpty(album) || p.album.ToLower().Contains(album.ToLower()))
-                .Where(p => string.IsNullOrEmpty(title) || p.title.ToLower().Contains(title.ToLower()))
-                .OrderBy(p => string.IsNullOrEmpty(p.album_artist) ? p.artist : p.album_artist)
-                .ThenBy(p => p.album)
-                .ThenBy(p => p.track_number)
-                .ThenBy(p => p.title)
-                .ToList();
+            var tracklistWithNames = trackList.Select(p =>
+                new TrackPath
+                {
+                    Track = p,
+                    Filename = GetOutputFilename(p),
+                    Directory = GetOutputDirectory(p),
+                }
+            ).ToList();
 
-            this.observer.BeginDownloadTracks(tracksToDownload.Select(p => CreateTrackMetadata(p)));
+            var duplicateFilenames = tracklistWithNames.GroupBy(x => x.Directory + x.Filename)
+              .Where(g => g.Count() > 1)
+              .SelectMany(p => p)
+              .ToList();
 
-            foreach (var track in tracksToDownload)
+            foreach (var duplicate in duplicateFilenames)
             {
+                duplicate.Filename = GetOutputFilenameUnique(duplicate.Track);
+            }
+
+            var tracksToDownload = tracklistWithNames.Where(p => string.IsNullOrEmpty(artist) || p.Track.artist.ToLower().Contains(artist.ToLower()))
+                 .Where(p => string.IsNullOrEmpty(album) || p.Track.album.ToLower().Contains(album.ToLower()))
+                 .Where(p => string.IsNullOrEmpty(title) || p.Track.title.ToLower().Contains(title.ToLower()))
+                 .OrderBy(p => string.IsNullOrEmpty(p.Track.album_artist) ? p.Track.artist : p.Track.album_artist)
+                 .ThenBy(p => p.Track.album)
+                 .ThenBy(p => p.Track.track_number)
+                 .ThenBy(p => p.Track.title)
+                 .ToList();
+
+            this.observer.BeginDownloadTracks(tracksToDownload.Select(p => CreateTrackMetadata(p.Track)));
+
+            foreach (var trackWithName in tracksToDownload)
+            {
+                var track = trackWithName.Track;
                 this.observer.BeginDownloadTrack(CreateTrackMetadata(track));
 
-                var filename = GetOutputFilename(track);
-                var folderPath = GetOutputDirectory(track);
+                var filename = trackWithName.Filename;
+                var folderPath = trackWithName.Directory;
                 folderPath = Path.Combine(path, folderPath);
                 var fullpath = Path.Combine(folderPath, filename);
 
@@ -140,9 +168,16 @@ namespace GoogleMusicManagerAPI
             return filename;
         }
 
+        private static string GetOutputFilenameUnique(DownloadTrackInfo track)
+        {
+            var filename = track.track_number + " " + track.title + " " + track.id + ".mp3";
+            Path.GetInvalidFileNameChars().ToList().ForEach(p => filename = filename.Replace(p.ToString(), ""));
+            return filename;
+        }
+
         private static string GetOutputDirectory(DownloadTrackInfo track)
         {
-            var invalidPathChars = Path.GetInvalidPathChars().Select(p=> p.ToString()).ToList();
+            var invalidPathChars = Path.GetInvalidPathChars().Select(p => p.ToString()).ToList();
             invalidPathChars.Add(":");
             invalidPathChars.Add("?");
 
